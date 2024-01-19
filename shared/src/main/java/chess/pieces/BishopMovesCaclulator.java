@@ -17,7 +17,7 @@ public class BishopMovesCaclulator {
         int col = myPosition.getColumn()+1;
         for(int row = (myPosition.getRow()+1) ; row<=8; row++) { //iterates through each row
             //for (int j = (myPosition.getColumn()+1); j<8; j++){ //iterates through each column in specified row
-                    if(col < 8){
+                    if(col <= 8){
                         ChessPosition movePosition;
                         movePosition = new ChessPosition(row,col);
                         ChessMove actualMove = new ChessMove(myPosition, movePosition);
