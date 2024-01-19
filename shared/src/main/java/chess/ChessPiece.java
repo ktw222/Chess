@@ -1,8 +1,6 @@
 package chess;
 
-import chess.pieces.BishopMovesCaclulator;
-import chess.pieces.QueenMovesCalculator;
-import chess.pieces.RookMovesCalculator;
+import chess.pieces.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,7 +74,14 @@ public class ChessPiece {
             QueenMovesCalculator queenObject = new QueenMovesCalculator();
             possibleMoves = queenObject.queenMoves(board, myPosition);
         }
-
+        if(currPieceType == PieceType.KING) {
+            KingMovesCalculator kingObject = new KingMovesCalculator();
+            possibleMoves = kingObject.kingMoves(board, myPosition);
+        }
+        if(currPieceType == PieceType.KNIGHT) {
+            KnightMovesCalculator knightObject = new KnightMovesCalculator();
+            possibleMoves = knightObject.knightMoves(board, myPosition);
+        }
         return possibleMoves;
     }
 
