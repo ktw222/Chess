@@ -69,6 +69,7 @@ public class ChessPiece {
         }
         if(currPieceType == PieceType.ROOK) {
             RookMovesCalculator rookObject = new RookMovesCalculator();
+            possibleMoves = rookObject.rookMoves(board, myPosition);
         }
 
         return possibleMoves;
