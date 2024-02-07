@@ -99,8 +99,8 @@ public class ChessGame {
         }
         if(chessBoard.getPiece(move.getStartPosition()).getTeamColor() == getTeamTurn()) {
             ChessPiece currPiece = chessBoard.getPiece(move.getStartPosition());
-            Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
-            if(validMoves.contains(move)) {
+            Collection<ChessMove> validMoveList = validMoves(move.getStartPosition());
+            if(validMoveList.contains(move)) {
                 chessBoard.addPiece(move.getEndPosition(), currPiece);
                 chessBoard.addPiece(move.getStartPosition(), null);
                 if(move.getPromotionPiece() != null) {
@@ -114,11 +114,6 @@ public class ChessGame {
             } else{throw new InvalidMoveException("move not in valid moves list");}
 
         } else{throw new InvalidMoveException("move not in valid moves list");}
-        //if (isValid == false) {
-            //ChessPosition startPos = move.getStartPosition();
-            //throw new InvalidMoveException("move not in valid moves list");
-        //}
-        //throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -204,7 +199,8 @@ public class ChessGame {
                 if(chessBoard.getPiece(currPosition) == null) {
                 } else {
                     if(chessBoard.getPiece(currPosition).getTeamColor() == teamColor) {
-                        if(validMoves(currPosition) == null) {
+                        Collection<ChessMove> validMoveList = validMoves(currPosition);
+                        if(validMoveList.isEmpty()){
                             return true;
                         }
                     }
