@@ -1,19 +1,18 @@
 package dataAccess;
 
+
+import model.AuthData;
 import model.UserData;
 
 import java.util.ArrayList;
-
+import java.util.UUID;
 
 public class MemoryAuthDAO implements AuthDAO {
     final private ArrayList<UserData> users = new ArrayList<>();
-    public UserData getUser(UserData user) {
-        return user;
-    }
-    public UserData createUser(UserData user) {
-        user = new UserData(user.username(), user.password(), user.email());
-        users.add(user);
-        return user;
+    public AuthData createAuth(String username) {
+        String authToken = UUID.randomUUID().toString();
+        AuthData authData = new AuthData(authToken, username);
+        return authData;
     }
 
 }
