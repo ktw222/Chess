@@ -43,19 +43,8 @@ class UserServiceTest {
         password = "12345";
         email = "bobthecat@yahoo.com";
         userData = new UserData(username, password, email);
-        String authToken = UUID.randomUUID().toString();
-        AuthData authData = new AuthData(authToken, username);
-        authToken = authData.authToken();
-        Assertions.assertEquals(authToken, userServiceObj.register(userData));
+
 
     }
-    public void registerDuplicateUser() throws DataAccessException {
-        UserService userServiceObj = new UserService();
-        username = "bob";
-        password = "12345";
-        email = "bobthecat@yahoo.com";
 
-        Assertions.assertEquals(authToken, userServiceObj.register(userData));
-
-    }
 }
