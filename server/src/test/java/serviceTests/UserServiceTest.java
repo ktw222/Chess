@@ -22,6 +22,8 @@ class UserServiceTest {
     private String email;
     private UserData userData;
     private AuthData authData;
+    private  MemoryAuthDAO memoryAuthDAO;
+    private MemoryUserDAO memoryUserDAO;
     private ArrayList<UserData> users;
 
     @BeforeEach
@@ -32,19 +34,39 @@ class UserServiceTest {
         String authToken = "";
         userData = new UserData(username, password, email);
         authData = new AuthData(authToken, username);
+        memoryAuthDAO = new MemoryAuthDAO();
+        memoryUserDAO = new MemoryUserDAO();
 
         users = new ArrayList<>();
     }
 
     @Test
     public void registerFirstUser() throws DataAccessException {
-        UserService userServiceObj = new UserService();
+        UserService userServiceObj = new UserService(memoryUserDAO, memoryAuthDAO);
         username = "bob";
         password = "12345";
         email = "bobthecat@yahoo.com";
         userData = new UserData(username, password, email);
+        boolean success = true;
+        Assertions.assertEquals(success, userServiceObj.register(userData));
+        Assertions.assertEquals(userData, memoryUserDAO.getUser(username));
+    }
+    @Test
+    public void registerExistingUser() throws DataAccessException {
+        UserService userServiceObj = new UserService(memoryUserDAO, memoryAuthDAO);
+        username = "bob";
+        password = "12345";
+        email = "bobthecat@yahoo.com";
+        userData = new UserData(username, password, email);
+        userServiceObj.register(userData);
+        username = "bob";
+        password = "109876";
+        email = "bobsEmail234@bing.com";
+        userData = new UserData(username,password, email);
+        Assertions.assertThrows(DataAccessException.class, () -> userServiceObj.register(userData));
 
-
+        //Assertions.assertEquals(success, userServiceObj.register(userData));
+        //Assertions.assertEquals(userData, memoryUserDAO.getUser(username));
     }
 
 }
