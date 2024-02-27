@@ -2,6 +2,7 @@ package handler;
 
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryUserDAO;
+import model.AuthData;
 import model.UserData;
 import service.UserService;
 import com.google.gson.Gson;
@@ -21,7 +22,7 @@ public class RegisterHandler implements Route {
         UserData request = (UserData)gson.fromJson(req.body(), UserData.class);
 
         UserService service = new UserService(memoryUserDAO, memAuthDao);
-        UserData result = service.register(request);
+        AuthData result = service.register(request);
         return gson.toJson(result);
     }
 

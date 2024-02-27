@@ -12,12 +12,12 @@ public class UserService {
         this.memUserDAO = memUserDAO;
         this.memAuthDAO = memAuthDAO;
     }
-    public UserData register(UserData user) throws DataAccessException{
+    public AuthData register(UserData user) throws DataAccessException{
 
         if(memUserDAO.getUser(user.username()) == null) {
             UserData newUser = memUserDAO.createUser(user);
             AuthData authentication = memAuthDAO.createAuth(user.username());
-            return newUser;
+            return authentication;
             //could return auth token
         } else {
             throw new DataAccessException("Username is taken, pick a new one.");
@@ -25,9 +25,8 @@ public class UserService {
 
     }
 
-    public boolean clearUsers(String username) throws DataAccessException {
+    public void clearUsers() throws DataAccessException {
         memUserDAO.clearUsers();
-        return true;
     }
 
 
