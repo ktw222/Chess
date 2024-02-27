@@ -30,8 +30,17 @@ public class UserService {
     }
 
 
-    public AuthData login(UserData user) {
-        return null;
+    public AuthData login(UserData user) throws DataAccessException {
+        if(memUserDAO.getUser(user.username()) != null) {
+            UserData currUser = memUserDAO.getUser(user.username());
+            if(user.password().equals(currUser.password())) {
+                AuthData authentication = memAuthDAO.createAuth(user.username());
+                return authentication;
+            }
+            //could return auth token
+        } else {
+            throw new DataAccessException("");
+        }
     }
     public void logout(UserData user) {}
 }
