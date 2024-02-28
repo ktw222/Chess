@@ -33,14 +33,28 @@ public class UserService {
     public AuthData login(UserData user) throws DataAccessException {
         if(memUserDAO.getUser(user.username()) != null) {
             UserData currUser = memUserDAO.getUser(user.username());
-            if(user.password().equals(currUser.password())) {
+            if (user.password().equals(currUser.password())) {
                 AuthData authentication = memAuthDAO.createAuth(user.username());
                 return authentication;
             }
             //could return auth token
-        } else {
-            throw new DataAccessException("");
+            else {
+                throw new DataAccessException("Incorrect password");
+            }
+        }else {
+            throw new DataAccessException("User doesn't exist");
         }
     }
-    public void logout(UserData user) {}
+    public void logout(AuthData auth) throws DataAccessException {
+        if(memAuthDAO.getAuth(auth.authToken()) != null) {
+            AuthData currAuth = memAuthDAO.getAuth(auth.authToken());
+            memAuthDAO.deleteAuth(auth.authToken());
+
+            //could return auth token
+
+        }
+        else {
+            throw new DataAccessException("Not Authorized");
+        }
+    }
 }
