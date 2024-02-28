@@ -45,11 +45,10 @@ public class UserService {
             throw new DataAccessException("User doesn't exist");
         }
     }
-    public void logout(AuthData auth) throws DataAccessException {
-        if(memAuthDAO.getAuth(auth.authToken()) != null) {
-            AuthData currAuth = memAuthDAO.getAuth(auth.authToken());
-            memAuthDAO.deleteAuth(auth.authToken());
-
+    public void logout(String authToken) throws DataAccessException {
+        if(memAuthDAO.getAuth(authToken) != null) {
+            //AuthData currAuth = memAuthDAO.getAuth(authToken);
+            memAuthDAO.deleteAuth(authToken);
             //could return auth token
 
         }

@@ -16,13 +16,12 @@ public class LogoutHandler implements Route {
         MemoryAuthDAO memAuthDao = new MemoryAuthDAO();
         MemoryUserDAO memoryUserDAO = new MemoryUserDAO();
         Gson gson = new Gson();
-
-        AuthData request = (AuthData) gson.fromJson(req.body(), AuthData.class);
-        if(request.authToken() == null ) {
+        String authToken = req.headers("Authorization");
+        if(authToken == null ) {
             throw new Exception("Bad Request");
         }
         UserService service = new UserService(memoryUserDAO, memAuthDao);
-        service.logout(request);
+        service.logout(authToken);
         return "{}";
     }
 }

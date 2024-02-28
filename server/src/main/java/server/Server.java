@@ -1,10 +1,7 @@
 package server;
 
 import dataAccess.DataAccessException;
-import handler.ClearHandler;
-import handler.LoginHandler;
-import handler.LogoutHandler;
-import handler.RegisterHandler;
+import handler.*;
 import spark.*;
 
 public class Server {
@@ -25,8 +22,10 @@ public class Server {
                 "Executing route: " + req.pathInfo()));
         Spark.post("/user", new RegisterHandler());
         Spark.delete("/db", new ClearHandler());
+        Spark.delete("/session", new LogoutHandler()); //problem
         Spark.post("/session", new LoginHandler());
-        Spark.delete("/session", new LogoutHandler());
+        Spark.post("/game", new CreateGameHandler());
+        Spark.get("/get", new ListGamesHandler());
         Spark.exception(Exception.class, this:: exceptionHandler);
         //Spark.post("/session", new LoginHandler());
         //Spark.get("/hello", (req, res) -> "Hello BYU!");

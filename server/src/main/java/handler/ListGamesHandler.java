@@ -1,4 +1,27 @@
 package handler;
 
-public class ListGamesHandler {
+import com.google.gson.Gson;
+import dataAccess.MemoryAuthDAO;
+import dataAccess.MemoryGameDAO;
+import reqRes.ReqCreateGame;
+import service.GameService;
+import spark.Request;
+import spark.Response;
+import spark.Route;
+
+public class ListGamesHandler implements Route {
+    @Override
+    public Object handle(Request req, Response res) throws Exception {
+        MemoryAuthDAO memAuthDao = new MemoryAuthDAO();
+        MemoryGameDAO memoryGameDAO = new MemoryGameDAO();
+        Gson gson = new Gson();
+        String authToken = req.headers("Authorization");
+        ReqCreateGame request = (ReqCreateGame) gson.fromJson(req.body(), ReqCreateGame.class);
+        if(request.gameName() == null) {
+            throw new Exception("Bad Request");
+        }
+        GameService service = new GameService(memoryGameDAO, memAuthDao);
+        int result = service.createGame(request, authToken);
+        return "{\"gameID\": " + String.valueOf(result) + "}" ;
+    }
 }
