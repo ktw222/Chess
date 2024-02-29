@@ -38,14 +38,23 @@ public class GameService {
             throw new DataAccessException("Not Authorized");
         }
     }
-    public void joinGame(ReqJoinGame joinGameObj, String authToken) throws Exception {
+    public void joinGame(ReqJoinGame joinGameObj, String authToken) throws DataAccessException {
         if(memAuthDAO.getAuth(authToken) != null) {
             if(memGameDAO.getGame(joinGameObj.gameID()) != null) {
-                AuthData authData = memAuthDAO.getAuth(authToken);
-                String username = authData.username();
-                memGameDAO.joinGame(joinGameObj, username);
+                GameData gameData = memGameDAO.getGame(joinGameObj.gameID());
+                if(joinGameObj.playerColor() == null) {
+                    AuthData authData = memAuthDAO.getAuth(authToken);
+                    String username = authData.username();
+                    memGameDAO.joinGame(joinGameObj, username);
+                } else if(joinGameObj.playerColor().equals("WHITE") || joinGameObj.playerColor().equals("BLACK")) {
+                    AuthData authData = memAuthDAO.getAuth(authToken);
+                    String username = authData.username();
+                    memGameDAO.joinGame(joinGameObj, username);
+                } else {
+                    throw new DataAccessException("Bad Request");
+                }
             } else {
-                throw new Exception("Bad Request");
+                throw new DataAccessException("Bad Request");
             }
         }
         else{

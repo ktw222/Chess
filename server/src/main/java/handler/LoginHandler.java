@@ -1,5 +1,6 @@
 package handler;
 import com.google.gson.Gson;
+import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryUserDAO;
 import model.AuthData;
@@ -21,7 +22,7 @@ public class LoginHandler implements Route {
 
         UserData request = (UserData) gson.fromJson(req.body(), UserData.class);
         if(request.username() == null || request.password() ==null ) {
-            throw new Exception("Bad Request");
+            throw new DataAccessException("Bad Request");
         }
         UserService service = new UserService(memoryUserDAO, memAuthDao);
         AuthData result = service.login(request);

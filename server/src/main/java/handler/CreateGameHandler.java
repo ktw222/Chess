@@ -1,6 +1,7 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
 import dataAccess.MemoryUserDAO;
@@ -20,7 +21,7 @@ public class CreateGameHandler implements Route {
         String authToken = req.headers("Authorization");
         ReqCreateGame request = (ReqCreateGame) gson.fromJson(req.body(), ReqCreateGame.class);
         if(request.gameName() == null) {
-            throw new Exception("Bad Request");
+            throw new DataAccessException("Bad Request");
         }
         GameService service = new GameService(memoryGameDAO, memAuthDao);
         int result = service.createGame(request, authToken);

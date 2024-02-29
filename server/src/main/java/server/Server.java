@@ -27,13 +27,13 @@ public class Server {
         Spark.post("/game", new CreateGameHandler());
         Spark.get("/game", new ListGamesHandler());
         Spark.put("/game", new JoinHandler());
-        Spark.exception(Exception.class, this:: exceptionHandler);
+        Spark.exception(DataAccessException.class, this:: exceptionHandler);
         //Spark.post("/session", new LoginHandler());
         //Spark.get("/hello", (req, res) -> "Hello BYU!");
     }
-    public void exceptionHandler(Exception ex, Request req, Response res) {
+    public void exceptionHandler(DataAccessException ex, Request req, Response res) {
         //res.status(200);
-        if(ex.getMessage().equals("Username is taken, pick a new one.")) {
+        if(ex.getMessage().equals("Username is taken, pick a new one.") || ex.getMessage().equals("Color already taken")) {
             res.status(403);
             res.body("{\"message\": \"Error: already taken\"}");
         }

@@ -23,6 +23,44 @@ public class ListGamesHandler implements Route {
 
         GameService service = new GameService(memoryGameDAO, memAuthDao);
         Collection<GameData> result = service.listGames(authToken);
-        return "{\"games\": " + String.valueOf(result) + "}" ;
+        System.out.println(result);
+        StringBuilder outputString;
+        outputString = new StringBuilder("{ \"games\": [");
+        boolean isFirst = true;
+
+        for(GameData data : result) {
+
+            if(isFirst != true){
+                outputString.append(", ");
+            }
+            outputString.append("{\"gameID\": ").append(String.valueOf(data.gameID()));
+            outputString.append(", \"whiteUsername\":");
+            if(data.whiteUsername() == null) {
+            }else if(data.whiteUsername() != null) {
+                outputString.append("\"");
+            }
+            outputString.append(data.whiteUsername());
+            if(data.whiteUsername() == null) {
+            }if(data.whiteUsername() != null) {
+                outputString.append("\"");
+            }
+            outputString.append(", \"blackUsername\":");
+            if(data.blackUsername() == null) {
+            }if(data.blackUsername() != null) {
+                outputString.append("\"");
+            }
+            outputString.append(data.blackUsername());
+            if(data.blackUsername() == null) {
+            } else if(data.blackUsername() != null) {
+                outputString.append("\"");
+            }
+            outputString.append(", \"gameName\":\"").append(data.gameName());
+            outputString.append("\"}");
+            isFirst = false;
+        }
+        outputString.append("]}");
+        System.out.println(outputString.toString());
+
+        return outputString.toString();
     }
 }

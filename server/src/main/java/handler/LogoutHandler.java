@@ -1,6 +1,7 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryUserDAO;
 import model.AuthData;
@@ -18,7 +19,7 @@ public class LogoutHandler implements Route {
         Gson gson = new Gson();
         String authToken = req.headers("Authorization");
         if(authToken == null ) {
-            throw new Exception("Bad Request");
+            throw new DataAccessException("Bad Request");
         }
         UserService service = new UserService(memoryUserDAO, memAuthDao);
         service.logout(authToken);

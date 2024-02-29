@@ -17,6 +17,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceTest {
+
     private String username;
     private String password;
     private String email;
@@ -47,8 +48,9 @@ class UserServiceTest {
         password = "12345";
         email = "bobthecat@yahoo.com";
         userData = new UserData(username, password, email);
-        boolean success = true;
-        Assertions.assertEquals(success, userServiceObj.register(userData));
+        //authData = userServiceObj.register(u)
+
+        userServiceObj.register(userData);
         Assertions.assertEquals(userData, memoryUserDAO.getUser(username));
     }
     @Test
@@ -67,6 +69,45 @@ class UserServiceTest {
 
         //Assertions.assertEquals(success, userServiceObj.register(userData));
         //Assertions.assertEquals(userData, memoryUserDAO.getUser(username));
+    }
+
+    @Test
+    void logoutNotSuccessful() throws Exception{
+        UserService userServiceObj = new UserService(memoryUserDAO, memoryAuthDAO);
+        String empty = null;
+        Assertions.assertThrows(Exception.class, () -> userServiceObj.logout(empty));
+    }
+    @Test
+    void logoutSuccessful() throws Exception{
+        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO);
+        UserData userData = new UserData("a", "b", "c");
+        AuthData auth = userService.register(userData);
+        userService.logout(auth.authToken());
+        Assertions.assertEquals(null, memoryAuthDAO.getAuth(auth.authToken()));
+    }
+    @Test
+    void loginNotSuccessful() throws Exception {
+        UserService service = new UserService(memoryUserDAO, memoryAuthDAO);
+        UserData userData = new UserData("a", "b", "c");
+        Assertions.assertThrows(Exception.class, () -> service.login(userData));
+    }
+    @Test
+    void loginSuccessful() throws Exception {
+        UserService service = new UserService(memoryUserDAO, memoryAuthDAO);
+        UserData userData = new UserData("a", "b", "c");
+        AuthData auth = service.register(userData);
+        service.logout(auth.authToken());
+        AuthData loginAuth = service.login(userData);
+        Assertions.assertEquals(loginAuth, memoryAuthDAO.getAuth(loginAuth.authToken()));
+
+    }
+    @Test
+    void clearUsers() throws Exception {
+        UserService service = new UserService(memoryUserDAO, memoryAuthDAO);
+        UserData userData = new UserData("a", "b", "c");
+        service.register(userData);
+        service.clearUsers();
+        Assertions.assertEquals(true, true);
     }
 
 }

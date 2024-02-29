@@ -1,5 +1,6 @@
 package handler;
 
+import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryUserDAO;
 import model.AuthData;
@@ -22,7 +23,7 @@ public class RegisterHandler implements Route {
 
         UserData request = (UserData) gson.fromJson(req.body(), UserData.class);
         if(request.username() == null || request.password() == null || request.email() == null) {
-            throw new Exception("Bad Request");
+            throw new DataAccessException("Bad Request");
         }
         UserService service = new UserService(memoryUserDAO, memAuthDao);
         AuthData result = service.register(request);
