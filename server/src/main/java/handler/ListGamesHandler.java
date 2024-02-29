@@ -3,11 +3,15 @@ package handler;
 import com.google.gson.Gson;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
+import model.GameData;
 import reqRes.ReqCreateGame;
 import service.GameService;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class ListGamesHandler implements Route {
     @Override
@@ -16,12 +20,9 @@ public class ListGamesHandler implements Route {
         MemoryGameDAO memoryGameDAO = new MemoryGameDAO();
         Gson gson = new Gson();
         String authToken = req.headers("Authorization");
-        ReqCreateGame request = (ReqCreateGame) gson.fromJson(req.body(), ReqCreateGame.class);
-        if(request.gameName() == null) {
-            throw new Exception("Bad Request");
-        }
+
         GameService service = new GameService(memoryGameDAO, memAuthDao);
-        int result = service.createGame(request, authToken);
-        return "{\"gameID\": " + String.valueOf(result) + "}" ;
+        Collection<GameData> result = service.listGames(authToken);
+        return "{\"games\": " + String.valueOf(result) + "}" ;
     }
 }

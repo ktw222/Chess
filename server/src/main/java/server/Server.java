@@ -25,7 +25,8 @@ public class Server {
         Spark.delete("/session", new LogoutHandler()); //problem
         Spark.post("/session", new LoginHandler());
         Spark.post("/game", new CreateGameHandler());
-        Spark.get("/get", new ListGamesHandler());
+        Spark.get("/game", new ListGamesHandler());
+        Spark.put("/game", new JoinHandler());
         Spark.exception(Exception.class, this:: exceptionHandler);
         //Spark.post("/session", new LoginHandler());
         //Spark.get("/hello", (req, res) -> "Hello BYU!");
