@@ -44,7 +44,7 @@ class UserServiceTest {
     @Test
     public void registerFirstUser() throws DataAccessException {
         UserService userServiceObj = new UserService(memoryUserDAO, memoryAuthDAO);
-        username = "bob";
+        username = "bob56";
         password = "12345";
         email = "bobthecat@yahoo.com";
         userData = new UserData(username, password, email);
@@ -80,7 +80,7 @@ class UserServiceTest {
     @Test
     void logoutSuccessful() throws Exception{
         UserService userService = new UserService(memoryUserDAO, memoryAuthDAO);
-        UserData userData = new UserData("a", "b", "c");
+        UserData userData = new UserData("ape", "bug", "circus");
         AuthData auth = userService.register(userData);
         userService.logout(auth.authToken());
         Assertions.assertEquals(null, memoryAuthDAO.getAuth(auth.authToken()));
@@ -88,13 +88,13 @@ class UserServiceTest {
     @Test
     void loginNotSuccessful() throws Exception {
         UserService service = new UserService(memoryUserDAO, memoryAuthDAO);
-        UserData userData = new UserData("a", "b", "c");
+        UserData userData = new UserData("12", "b", "c");
         Assertions.assertThrows(Exception.class, () -> service.login(userData));
     }
     @Test
     void loginSuccessful() throws Exception {
         UserService service = new UserService(memoryUserDAO, memoryAuthDAO);
-        UserData userData = new UserData("a", "b", "c");
+        UserData userData = new UserData("apple", "banana", "cat");
         AuthData auth = service.register(userData);
         service.logout(auth.authToken());
         AuthData loginAuth = service.login(userData);
@@ -104,7 +104,7 @@ class UserServiceTest {
     @Test
     void clearUsers() throws Exception {
         UserService service = new UserService(memoryUserDAO, memoryAuthDAO);
-        UserData userData = new UserData("a", "b", "c");
+        UserData userData = new UserData("pancake", "buntcake", "cupcake");
         service.register(userData);
         service.clearUsers();
         Assertions.assertEquals(true, true);
