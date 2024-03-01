@@ -12,7 +12,6 @@ public class RookMovesCalculator {
         //moveVerticallyUp (only rows change)
         int col = myPosition.getColumn();
         for (int row = (myPosition.getRow() +1); row <= 8; row++) {
-
             ChessPosition movePosition;
             movePosition = new ChessPosition(row,col);
             ChessMove actualMove = new ChessMove(myPosition, movePosition);

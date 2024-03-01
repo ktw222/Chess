@@ -19,7 +19,6 @@ public class KingMovesCalculator {
         }
     }
     public ArrayList<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
-        MovePiece movePiece = new MovePiece();
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
         int col = myPosition.getColumn();
         int row = myPosition.getRow()+1;
