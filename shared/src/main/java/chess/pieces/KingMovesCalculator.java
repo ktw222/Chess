@@ -6,18 +6,7 @@ import chess.ChessPosition;
 
 import java.util.ArrayList;
 public class KingMovesCalculator {
-    public void moveKing(ArrayList possibleMoves, ChessBoard board, ChessPosition myPosition, int row, int col) {
-        ChessPosition movePosition;
-        movePosition = new ChessPosition(row, col);
-        ChessMove actualMove = new ChessMove(myPosition, movePosition);
-        if (board.getPiece(movePosition) == null) {
-            possibleMoves.add(actualMove);
-        } else {
-            if (board.getPiece(movePosition).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
-                possibleMoves.add(actualMove);
-            }
-        }
-    }
+
     public ArrayList<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
         MoveCalculator move = new MoveCalculator();
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
