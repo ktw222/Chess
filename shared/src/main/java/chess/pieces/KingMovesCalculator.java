@@ -19,51 +19,52 @@ public class KingMovesCalculator {
         }
     }
     public ArrayList<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
+        MoveCalculator move = new MoveCalculator();
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
         int col = myPosition.getColumn();
         int row = myPosition.getRow()+1;
         if(row<=8) {
-            moveKing(possibleMoves, board, myPosition, row, col);
+            move.movePiece(possibleMoves, board, myPosition, row, col);
         }
         row = myPosition.getRow()-1;
         if(row>0) {
-            moveKing(possibleMoves, board, myPosition, row, col);
+            move.movePiece(possibleMoves, board, myPosition, row, col);
         }
         row = myPosition.getRow();
         col = myPosition.getColumn()+1;
         if(col<=8) {
-            moveKing(possibleMoves, board, myPosition, row, col);
+            move.movePiece(possibleMoves, board, myPosition, row, col);
         }
         col = myPosition.getColumn()-1;
         if(col>0) {
-            moveKing(possibleMoves, board, myPosition, row, col);
+            move.movePiece(possibleMoves, board, myPosition, row, col);
         }
         col = myPosition.getColumn()+1;
         row = (myPosition.getRow()+1);
         if (row <= 8) {
             if (col <= 8) {
-                moveKing(possibleMoves, board, myPosition, row, col);
+                move.movePiece(possibleMoves, board, myPosition, row, col);
             }
         }
         col = myPosition.getColumn()-1;
         row = (myPosition.getRow()-1);
         if (row > 0) {
             if (col > 0) {
-                moveKing(possibleMoves, board, myPosition, row, col);
+                move.movePiece(possibleMoves, board, myPosition, row, col);
             }
         }
         col = myPosition.getColumn()-1;
         row = (myPosition.getRow()+1);
         if (row <= 8) {
             if (col > 0) {
-                moveKing(possibleMoves, board, myPosition, row, col);
+                move.movePiece(possibleMoves, board, myPosition, row, col);
             }
         }
         col = myPosition.getColumn()+1;
         row = (myPosition.getRow()-1);
         if (row > 0) {
             if (col <= 8) {
-                moveKing(possibleMoves, board, myPosition, row, col);
+                move.movePiece(possibleMoves, board, myPosition, row, col);
             }
         }
         return possibleMoves;
