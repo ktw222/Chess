@@ -10,9 +10,6 @@ public class MemoryUserDAO implements UserDAO{
     public UserData getUser(String username) {
         return users.get(username);
     }
-    public void deleteUser(String username) {
-        users.remove(username);
-    }
     public UserData createUser(UserData user) {
         users.put(user.username(), user);
         return user;
