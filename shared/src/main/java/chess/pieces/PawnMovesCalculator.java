@@ -1,16 +1,13 @@
 package chess.pieces;
-
 import chess.*;
 
 import java.util.ArrayList;
-
 public class PawnMovesCalculator {
     public ArrayList<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
+        MoveCalculator move = new MoveCalculator();
         ArrayList<ChessMove> possibleMoves = new ArrayList<>();
         int row = 0;
         int col = 0;
-
-
         //white (moves up)
         if (board.getPiece(myPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
             //in row 2 (move up 2) //can never be a promotion
@@ -34,7 +31,7 @@ public class PawnMovesCalculator {
             ChessMove actualMove = new ChessMove(myPosition, movePosition);
             if (board.getPiece(movePosition) == null) {
                 if (movePosition.getRow() == 8) {
-                    promotion(myPosition, movePosition, actualMove, possibleMoves);
+                    move.promotion(myPosition, movePosition, actualMove, possibleMoves);
                 }
                 else {
                     possibleMoves.add(actualMove);
@@ -44,38 +41,15 @@ public class PawnMovesCalculator {
             col = myPosition.getColumn()+1;
             row = (myPosition.getRow()+1);
             if (col <= 8) {
-                movePosition = new ChessPosition(row, col);
-                actualMove = new ChessMove(myPosition, movePosition);
-                if (board.getPiece(movePosition) == null) {
-                } else {
-                    if (board.getPiece(movePosition).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
-                        if (movePosition.getRow() == 8) {
-                            promotion(myPosition, movePosition, actualMove, possibleMoves);
-                        } else {
-                            possibleMoves.add(actualMove);
-                        }
-                    }
-                }
+                move.pawnMove(row, col, myPosition, board, move, possibleMoves);
             }
             //diagonal up left capture
             col = myPosition.getColumn()-1;
             row = (myPosition.getRow()+1);
             if (col > 0) {
-                movePosition = new ChessPosition(row, col);
-                actualMove = new ChessMove(myPosition, movePosition);
-                if (board.getPiece(movePosition) == null) {
-                } else {
-                    if (board.getPiece(movePosition).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
-                        if (movePosition.getRow() == 8) {
-                            promotion(myPosition, movePosition, actualMove, possibleMoves);
-                        } else {
-                            possibleMoves.add(actualMove);
-                        }
-                    }
-                }
+                move.pawnMove(row, col, myPosition, board, move, possibleMoves);
             }
         }
-
         if (board.getPiece(myPosition).getTeamColor() == ChessGame.TeamColor.BLACK) {
             //in row 7 (move down 2) //can never be a promotion
             if(myPosition.getRow() == 7) {
@@ -98,7 +72,7 @@ public class PawnMovesCalculator {
             ChessMove actualMove = new ChessMove(myPosition, movePosition);
             if (board.getPiece(movePosition) == null) {
                 if (movePosition.getRow() == 1) {
-                    promotion(myPosition, movePosition, actualMove, possibleMoves);
+                    move.promotion(myPosition, movePosition, actualMove, possibleMoves);
                 }
                 else {
                     possibleMoves.add(actualMove);
@@ -108,49 +82,16 @@ public class PawnMovesCalculator {
             col = myPosition.getColumn()+1;
             row = (myPosition.getRow()-1);
             if (col <= 8) {
-                movePosition = new ChessPosition(row, col);
-                actualMove = new ChessMove(myPosition, movePosition);
-                if (board.getPiece(movePosition) == null) {
-                } else {
-                    if (board.getPiece(movePosition).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
-                        if (movePosition.getRow() == 1) {
-                            promotion(myPosition, movePosition, actualMove, possibleMoves);
-                        } else {
-                            possibleMoves.add(actualMove);
-                        }
-                    }
-                }
+                move.pawnMove(row, col, myPosition, board, move, possibleMoves);
             }
             //diagonal down left capture
             col = myPosition.getColumn()-1;
             row = (myPosition.getRow()-1);
             if (col > 0) {
-                movePosition = new ChessPosition(row, col);
-                actualMove = new ChessMove(myPosition, movePosition);
-                if (board.getPiece(movePosition) == null) {
-                } else {
-                    if (board.getPiece(movePosition).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
-                        if (movePosition.getRow() == 1) {
-                            promotion(myPosition, movePosition, actualMove, possibleMoves);
-                        } else {
-                            possibleMoves.add(actualMove);
-                        }
-                    }
-                }
+                move.pawnMove(row, col, myPosition, board, move, possibleMoves);
             }
         }
         return possibleMoves;
-    }
-    private void promotion(ChessPosition myPosition, ChessPosition movePosition, ChessMove actualMove,
-                           ArrayList<ChessMove> possibleMoves) {
-        actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.KNIGHT);
-        possibleMoves.add(actualMove);
-        actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.QUEEN);
-        possibleMoves.add(actualMove);
-        actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.ROOK);
-        possibleMoves.add(actualMove);
-        actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.BISHOP);
-        possibleMoves.add(actualMove);
     }
 
 }
