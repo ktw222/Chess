@@ -34,14 +34,7 @@ public class PawnMovesCalculator {
             ChessMove actualMove = new ChessMove(myPosition, movePosition);
             if (board.getPiece(movePosition) == null) {
                 if (movePosition.getRow() == 8) {
-                    actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.KNIGHT);
-                    possibleMoves.add(actualMove);
-                    actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.QUEEN);
-                    possibleMoves.add(actualMove);
-                    actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.ROOK);
-                    possibleMoves.add(actualMove);
-                    actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.BISHOP);
-                    possibleMoves.add(actualMove);
+                    promotion(myPosition, movePosition, actualMove, possibleMoves);
                 }
                 else {
                     possibleMoves.add(actualMove);
@@ -57,14 +50,7 @@ public class PawnMovesCalculator {
                 } else {
                     if (board.getPiece(movePosition).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
                         if (movePosition.getRow() == 8) {
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.KNIGHT);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.QUEEN);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.ROOK);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.BISHOP);
-                            possibleMoves.add(actualMove);
+                            promotion(myPosition, movePosition, actualMove, possibleMoves);
                         } else {
                             possibleMoves.add(actualMove);
                         }
@@ -81,14 +67,7 @@ public class PawnMovesCalculator {
                 } else {
                     if (board.getPiece(movePosition).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
                         if (movePosition.getRow() == 8) {
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.KNIGHT);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.QUEEN);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.ROOK);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.BISHOP);
-                            possibleMoves.add(actualMove);
+                            promotion(myPosition, movePosition, actualMove, possibleMoves);
                         } else {
                             possibleMoves.add(actualMove);
                         }
@@ -119,14 +98,7 @@ public class PawnMovesCalculator {
             ChessMove actualMove = new ChessMove(myPosition, movePosition);
             if (board.getPiece(movePosition) == null) {
                 if (movePosition.getRow() == 1) {
-                    actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.KNIGHT);
-                    possibleMoves.add(actualMove);
-                    actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.QUEEN);
-                    possibleMoves.add(actualMove);
-                    actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.ROOK);
-                    possibleMoves.add(actualMove);
-                    actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.BISHOP);
-                    possibleMoves.add(actualMove);
+                    promotion(myPosition, movePosition, actualMove, possibleMoves);
                 }
                 else {
                     possibleMoves.add(actualMove);
@@ -142,14 +114,7 @@ public class PawnMovesCalculator {
                 } else {
                     if (board.getPiece(movePosition).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
                         if (movePosition.getRow() == 1) {
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.KNIGHT);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.QUEEN);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.ROOK);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.BISHOP);
-                            possibleMoves.add(actualMove);
+                            promotion(myPosition, movePosition, actualMove, possibleMoves);
                         } else {
                             possibleMoves.add(actualMove);
                         }
@@ -166,14 +131,7 @@ public class PawnMovesCalculator {
                 } else {
                     if (board.getPiece(movePosition).getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
                         if (movePosition.getRow() == 1) {
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.KNIGHT);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.QUEEN);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.ROOK);
-                            possibleMoves.add(actualMove);
-                            actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.BISHOP);
-                            possibleMoves.add(actualMove);
+                            promotion(myPosition, movePosition, actualMove, possibleMoves);
                         } else {
                             possibleMoves.add(actualMove);
                         }
@@ -183,4 +141,16 @@ public class PawnMovesCalculator {
         }
         return possibleMoves;
     }
+    private void promotion(ChessPosition myPosition, ChessPosition movePosition, ChessMove actualMove,
+                           ArrayList<ChessMove> possibleMoves) {
+        actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.KNIGHT);
+        possibleMoves.add(actualMove);
+        actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.QUEEN);
+        possibleMoves.add(actualMove);
+        actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.ROOK);
+        possibleMoves.add(actualMove);
+        actualMove = new ChessMove(myPosition, movePosition, ChessPiece.PieceType.BISHOP);
+        possibleMoves.add(actualMove);
+    }
+
 }
