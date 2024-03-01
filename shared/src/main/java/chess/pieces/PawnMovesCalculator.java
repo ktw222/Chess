@@ -93,5 +93,4 @@ public class PawnMovesCalculator {
         }
         return possibleMoves;
     }
-
 }
