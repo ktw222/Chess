@@ -16,7 +16,7 @@ import spark.Route;
 public class RegisterHandler implements Route {
     //take in register request as json
 
-
+    //encode
     @Override
     public Object handle(Request req, Response res) throws Exception {
         MemoryAuthDAO memAuthDao = new MemoryAuthDAO();

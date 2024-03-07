@@ -30,7 +30,7 @@ public class UserService {
     }
     public AuthData login(UserData user) throws DataAccessException {
         if(userDAO.getUser(user.username()) != null) {
-            UserData currUser = userDAO.getUser(user.username());
+            UserData currUser = userDAO.getUser(user.username()); //verify username and password
             if (user.password().equals(currUser.password())) {
                 AuthData authentication = memAuthDAO.createAuth(user.username());
                 return authentication;

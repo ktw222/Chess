@@ -13,9 +13,19 @@ public class DatabaseUserDAO implements UserDAO {
         configureDatabase();
     }
     public UserData createUser(UserData user) throws DataAccessException {
-        var statement = "INSERT INTO user (name, user, json) VALUES (?, ?, ?)";
-        var json = new Gson().toJson(user);
-        var username = executeUpdate(statement, user, json);
+        var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
+
+        //void storeUserPassword(String username, String password) {
+//        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//        String hashedPassword = encoder.encode(clearTextPassword); // write the hashed password in database along with the user's other information
+//        writeHashedPasswordToDatabase(username, hashedPassword);
+//    }
+//    boolean verifyUser(String username, String providedClearTextPassword) {// read the previously hashed password from the database
+//        var hashedPassword = readHashedPasswordFromDatabase(username);
+//        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//        return encoder.matches(providedClearTextPassword, hashedPassword);
+//    }
+        var username = executeUpdate(statement, user.username(), user.password(), user.email());
         return new UserData(user.username(), user.password(), user.email());
     }
     public UserData getUser(String username) throws DataAccessException{
@@ -49,7 +59,9 @@ public class DatabaseUserDAO implements UserDAO {
             try (var db = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
-                    if (param instanceof String p) db.setString(i + 1, p);//else if (param instanceof Integer p) db.setInt(i + 1, p);//else if (param instanceof PetType p) db.setString(i + 1, p.toString());
+                    if (param instanceof String p) db.setString(i + 1, p);
+                    //else if (param instanceof Integer p) db.setInt(i + 1, p);
+                    //else if (param instanceof PetType p) db.setString(i + 1, p.toString());
                     else if (param == null) db.setNull(i + 1, NULL);
                 }
                 db.executeUpdate();
@@ -58,7 +70,8 @@ public class DatabaseUserDAO implements UserDAO {
                     return rs.getInt(1);
                 }
                 return 0;
-            }
+            }//databaseDao-> protected
+            //extend DatabaseDAO
         } catch (SQLException e) {
             throw new DataAccessException("unable to update database");
         }
@@ -69,7 +82,6 @@ public class DatabaseUserDAO implements UserDAO {
               `username` varchar(256) NOT NULL,
               `password` varchar(256) NOT NULL,
               `email` varchar(256) NOT NULL,
-              `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`username`),
               INDEX(password),
               INDEX(email)

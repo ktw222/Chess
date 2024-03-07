@@ -16,6 +16,7 @@ import java.io.*;
 import java.net.*;
 
 public class LoginHandler implements Route {
+    //decode
     @Override
     public Object handle(Request req, Response res) throws Exception {
         MemoryAuthDAO memAuthDao = new MemoryAuthDAO();
