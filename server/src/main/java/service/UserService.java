@@ -2,20 +2,21 @@ package service;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryUserDAO;
+import dataAccess.UserDAO;
 import model.UserData;
 import model.AuthData;
 public class UserService {
-    private final MemoryUserDAO memUserDAO;
+    private final UserDAO userDAO;
     private final MemoryAuthDAO memAuthDAO;
 
-    public UserService(MemoryUserDAO memUserDAO, MemoryAuthDAO memAuthDAO) {
-        this.memUserDAO = memUserDAO;
+    public UserService(UserDAO userDAO, MemoryAuthDAO memAuthDAO) {
+        this.userDAO = userDAO;
         this.memAuthDAO = memAuthDAO;
     }
     public AuthData register(UserData user) throws DataAccessException{
 
-        if(memUserDAO.getUser(user.username()) == null) {
-            UserData newUser = memUserDAO.createUser(user);
+        if(userDAO.getUser(user.username()) == null) {
+            UserData newUser = userDAO.createUser(user);
             AuthData authentication = memAuthDAO.createAuth(user.username());
             return authentication;
             //could return auth token
@@ -24,15 +25,12 @@ public class UserService {
         }
 
     }
-
     public void clearUsers() throws DataAccessException {
-        memUserDAO.clearUsers();
+        userDAO.clearUsers();
     }
-
-
     public AuthData login(UserData user) throws DataAccessException {
-        if(memUserDAO.getUser(user.username()) != null) {
-            UserData currUser = memUserDAO.getUser(user.username());
+        if(userDAO.getUser(user.username()) != null) {
+            UserData currUser = userDAO.getUser(user.username());
             if (user.password().equals(currUser.password())) {
                 AuthData authentication = memAuthDAO.createAuth(user.username());
                 return authentication;

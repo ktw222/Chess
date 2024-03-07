@@ -1,31 +1,28 @@
 package dataAccess.mySQL;
-
 import com.google.gson.Gson;
-import dataAccess.AuthDAO;
 import dataAccess.DataAccessException;
+import dataAccess.UserDAO;
 import model.UserData;
 import dataAccess.DatabaseManager;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.sql.*;
-
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
-
-public class DatabaseUserDAO implements AuthDAO {
+public class DatabaseUserDAO implements UserDAO {
     public DatabaseUserDAO() throws DataAccessException {
         configureDatabase();
     }
     public UserData createUser(UserData user) throws DataAccessException {
-        var statement = "INSERT INTO user (name, type, json) VALUES (?, ?, ?)";
+        var statement = "INSERT INTO user (name, user, json) VALUES (?, ?, ?)";
         var json = new Gson().toJson(user);
-        var id = executeUpdate(statement, user, json);
+        var username = executeUpdate(statement, user, json);
         return new UserData(user.username(), user.password(), user.email());
     }
     public UserData getUser(String username) throws DataAccessException{
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT username, json FROM user WHERE username=?";
             try (var ps = conn.prepareStatement(statement)) {
-                //ps.setInt(1, id);
+                ps.setString(1, username);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
                         return readUser(rs);
@@ -52,18 +49,14 @@ public class DatabaseUserDAO implements AuthDAO {
             try (var db = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
-                    if (param instanceof String p) db.setString(i + 1, p);
-                    else if (param instanceof Integer p) db.setInt(i + 1, p);
-                    else if (param instanceof PetType p) db.setString(i + 1, p.toString());
+                    if (param instanceof String p) db.setString(i + 1, p);//else if (param instanceof Integer p) db.setInt(i + 1, p);//else if (param instanceof PetType p) db.setString(i + 1, p.toString());
                     else if (param == null) db.setNull(i + 1, NULL);
                 }
                 db.executeUpdate();
-
                 var rs = db.getGeneratedKeys();
                 if (rs.next()) {
                     return rs.getInt(1);
                 }
-
                 return 0;
             }
         } catch (SQLException e) {
@@ -83,8 +76,16 @@ public class DatabaseUserDAO implements AuthDAO {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
-
-
+//    void storeUserPassword(String username, String password) {
+//        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//        String hashedPassword = encoder.encode(clearTextPassword); // write the hashed password in database along with the user's other information
+//        writeHashedPasswordToDatabase(username, hashedPassword);
+//    }
+//    boolean verifyUser(String username, String providedClearTextPassword) {// read the previously hashed password from the database
+//        var hashedPassword = readHashedPasswordFromDatabase(username);
+//        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//        return encoder.matches(providedClearTextPassword, hashedPassword);
+//    }
     private void configureDatabase() throws DataAccessException{
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
@@ -97,6 +98,4 @@ public class DatabaseUserDAO implements AuthDAO {
             throw new DataAccessException("Unable to configure database");
         }
     }
-}
-
 }
