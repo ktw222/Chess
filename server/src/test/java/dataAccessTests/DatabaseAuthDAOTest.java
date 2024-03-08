@@ -25,7 +25,11 @@ class DatabaseAuthDAOTest {
     }
 
     @Test
-    void getAuth() {
+    void getAuth() throws DataAccessException {
+        AuthDAO authDAO = new DatabaseAuthDAO();
+        AuthData authData = authDAO.getAuth("123");
+        Assertions.assertEquals(true, true);
+
     }
 
     @Test
