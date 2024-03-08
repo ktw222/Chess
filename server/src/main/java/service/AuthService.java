@@ -1,16 +1,13 @@
 package service;
 
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.*;
 
 public class AuthService {
-    private final MemoryUserDAO memUserDAO;
+    private final UserDAO userDAO;
     private final MemoryAuthDAO memAuthDAO;
 
-    public AuthService(MemoryUserDAO memUserDAO, MemoryAuthDAO memAuthDAO) {
-        this.memUserDAO = memUserDAO;
+    public AuthService(UserDAO userDAO, MemoryAuthDAO memAuthDAO) {
+        this.userDAO = userDAO;
         this.memAuthDAO = memAuthDAO;
     }
     public void clearAuths() throws DataAccessException {

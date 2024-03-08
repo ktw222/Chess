@@ -1,5 +1,6 @@
 package service;
 
+import dataAccess.AuthDAO;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
@@ -13,15 +14,15 @@ import java.util.Collection;
 
 public class GameService {
     private final MemoryGameDAO memGameDAO;
-    private final MemoryAuthDAO memAuthDAO;
+    private final AuthDAO authDAO;
 
-    public GameService(MemoryGameDAO memGameDAO, MemoryAuthDAO memAuthDAO) {
+    public GameService(MemoryGameDAO memGameDAO, AuthDAO authDAO) {
         this.memGameDAO = memGameDAO;
-        this.memAuthDAO = memAuthDAO;
+        this.authDAO = authDAO;
     }
     public int createGame(ReqCreateGame gameName, String authToken) throws DataAccessException {
         //check auth
-        if(memAuthDAO.getAuth(authToken) != null) {
+        if(authDAO.getAuth(authToken) != null) {
             int gameID = memGameDAO.createGame(gameName.gameName());
             return gameID;
         }
@@ -30,7 +31,7 @@ public class GameService {
         }
     }
     public Collection<GameData> listGames(String authToken) throws DataAccessException {
-        if(memAuthDAO.getAuth(authToken) != null) {
+        if(authDAO.getAuth(authToken) != null) {
             Collection<GameData> listOfGames = memGameDAO.listGames();
             return listOfGames;
         }
@@ -39,15 +40,15 @@ public class GameService {
         }
     }
     public void joinGame(ReqJoinGame joinGameObj, String authToken) throws DataAccessException {
-        if(memAuthDAO.getAuth(authToken) != null) {
+        if(authDAO.getAuth(authToken) != null) {
             if(memGameDAO.getGame(joinGameObj.gameID()) != null) {
                 GameData gameData = memGameDAO.getGame(joinGameObj.gameID());
                 if(joinGameObj.playerColor() == null) {
-                    AuthData authData = memAuthDAO.getAuth(authToken);
+                    AuthData authData = authDAO.getAuth(authToken);
                     String username = authData.username();
                     memGameDAO.joinGame(joinGameObj, username);
                 } else if(joinGameObj.playerColor().equals("WHITE") || joinGameObj.playerColor().equals("BLACK")) {
-                    AuthData authData = memAuthDAO.getAuth(authToken);
+                    AuthData authData = authDAO.getAuth(authToken);
                     String username = authData.username();
                     memGameDAO.joinGame(joinGameObj, username);
                 } else {

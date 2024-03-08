@@ -1,9 +1,7 @@
 package handler;
 
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryUserDAO;
-import dataAccess.UserDAO;
+import dataAccess.*;
+import dataAccess.mySQL.DatabaseAuthDAO;
 import dataAccess.mySQL.DatabaseUserDAO;
 import model.AuthData;
 import model.UserData;
@@ -19,7 +17,7 @@ public class RegisterHandler implements Route {
     //encode
     @Override
     public Object handle(Request req, Response res) throws Exception {
-        MemoryAuthDAO memAuthDao = new MemoryAuthDAO();
+        AuthDAO authDao = new DatabaseAuthDAO();
         UserDAO userDAO = new DatabaseUserDAO();
         Gson gson = new Gson();
 
@@ -27,7 +25,7 @@ public class RegisterHandler implements Route {
         if(request.username() == null || request.password() == null || request.email() == null) {
             throw new DataAccessException("Bad Request");
         }
-        UserService service = new UserService(userDAO, memAuthDao);
+        UserService service = new UserService(userDAO, authDao);
         AuthData result = service.register(request);
         return gson.toJson(result);
     }

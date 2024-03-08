@@ -1,23 +1,22 @@
 package service;
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryUserDAO;
-import dataAccess.UserDAO;
+import dataAccess.*;
 import model.UserData;
 import model.AuthData;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 public class UserService {
     private final UserDAO userDAO;
-    private final MemoryAuthDAO memAuthDAO;
+    private final AuthDAO authDAO;
 
-    public UserService(UserDAO userDAO, MemoryAuthDAO memAuthDAO) {
+    public UserService(UserDAO userDAO, AuthDAO authDAO) {
         this.userDAO = userDAO;
-        this.memAuthDAO = memAuthDAO;
+        this.authDAO = authDAO;
     }
     public AuthData register(UserData user) throws DataAccessException{
 
         if(userDAO.getUser(user.username()) == null) {
             UserData newUser = userDAO.createUser(user);
-            AuthData authentication = memAuthDAO.createAuth(user.username());
+            AuthData authentication = authDAO.createAuth(user.username());
             return authentication;
             //could return auth token
         } else {
@@ -31,8 +30,9 @@ public class UserService {
     public AuthData login(UserData user) throws DataAccessException {
         if(userDAO.getUser(user.username()) != null) {
             UserData currUser = userDAO.getUser(user.username()); //verify username and password
-            if (user.password().equals(currUser.password())) {
-                AuthData authentication = memAuthDAO.createAuth(user.username());
+            //if (user.password().equals(currUser.password())) {
+            if(verifyUser(currUser, user.password())){
+                AuthData authentication = authDAO.createAuth(user.username());
                 return authentication;
             }
             //could return auth token
@@ -44,14 +44,18 @@ public class UserService {
         }
     }
     public void logout(String authToken) throws DataAccessException {
-        if(memAuthDAO.getAuth(authToken) != null) {
+        if(authDAO.getAuth(authToken) != null) {
             //AuthData currAuth = memAuthDAO.getAuth(authToken);
-            memAuthDAO.deleteAuth(authToken);
+            authDAO.deleteAuth(authToken);
             //could return auth token
-
         }
         else {
             throw new DataAccessException("Not Authorized");
         }
+    }
+    boolean verifyUser(UserData currUser, String inputPassword) {// read the previously hashed password from the database
+        var hashedPassword = currUser.password();
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        return encoder.matches(inputPassword, hashedPassword);
     }
 }
