@@ -1,9 +1,9 @@
 package handler;
 
 import com.google.gson.Gson;
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
+import dataAccess.*;
+import dataAccess.mySQL.DatabaseAuthDAO;
+import dataAccess.mySQL.DatabaseGameDAO;
 import reqRes.ReqCreateGame;
 import reqRes.ReqJoinGame;
 import service.GameService;
@@ -15,8 +15,8 @@ public class JoinHandler implements Route {
 
     @Override
     public Object handle(Request req, Response res) throws DataAccessException {
-        MemoryAuthDAO memAuthDao = new MemoryAuthDAO();
-        MemoryGameDAO memoryGameDAO = new MemoryGameDAO();
+        AuthDAO authDao = new DatabaseAuthDAO();
+        GameDAO gameDAO = new DatabaseGameDAO();
         Gson gson = new Gson();
         String authToken = req.headers("Authorization");
         System.out.println(req.body());
@@ -25,7 +25,7 @@ public class JoinHandler implements Route {
         if(request.gameID() == null) {
             throw new DataAccessException("Bad Request");
         }
-        GameService service = new GameService(memoryGameDAO, memAuthDao);
+        GameService service = new GameService(gameDAO, authDao);
         service.joinGame(request, authToken);
         return "{}";
     }

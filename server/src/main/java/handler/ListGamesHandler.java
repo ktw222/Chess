@@ -1,8 +1,12 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataAccess.AuthDAO;
+import dataAccess.GameDAO;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
+import dataAccess.mySQL.DatabaseAuthDAO;
+import dataAccess.mySQL.DatabaseGameDAO;
 import model.GameData;
 import reqRes.ReqCreateGame;
 import service.GameService;
@@ -16,12 +20,12 @@ import java.util.Collection;
 public class ListGamesHandler implements Route {
     @Override
     public Object handle(Request req, Response res) throws Exception {
-        MemoryAuthDAO memAuthDao = new MemoryAuthDAO();
-        MemoryGameDAO memoryGameDAO = new MemoryGameDAO();
+        AuthDAO authDao = new DatabaseAuthDAO();
+        GameDAO gameDAO = new DatabaseGameDAO();
         Gson gson = new Gson();
         String authToken = req.headers("Authorization");
 
-        GameService service = new GameService(memoryGameDAO, memAuthDao);
+        GameService service = new GameService(gameDAO, authDao);
         Collection<GameData> result = service.listGames(authToken);
         System.out.println(result);
         StringBuilder outputString;

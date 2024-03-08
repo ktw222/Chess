@@ -1,9 +1,6 @@
 package service;
 
-import dataAccess.AuthDAO;
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
+import dataAccess.*;
 import model.AuthData;
 import model.GameData;
 import reqRes.ReqCreateGame;
@@ -13,17 +10,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class GameService {
-    private final MemoryGameDAO memGameDAO;
+    private final GameDAO gameDAO;
     private final AuthDAO authDAO;
 
-    public GameService(MemoryGameDAO memGameDAO, AuthDAO authDAO) {
-        this.memGameDAO = memGameDAO;
+    public GameService(GameDAO gameDAO, AuthDAO authDAO) {
+        this.gameDAO = gameDAO;
         this.authDAO = authDAO;
     }
     public int createGame(ReqCreateGame gameName, String authToken) throws DataAccessException {
         //check auth
         if(authDAO.getAuth(authToken) != null) {
-            int gameID = memGameDAO.createGame(gameName.gameName());
+            int gameID = gameDAO.createGame(gameName.gameName());
             return gameID;
         }
         else{
@@ -32,7 +29,7 @@ public class GameService {
     }
     public Collection<GameData> listGames(String authToken) throws DataAccessException {
         if(authDAO.getAuth(authToken) != null) {
-            Collection<GameData> listOfGames = memGameDAO.listGames();
+            Collection<GameData> listOfGames = gameDAO.listGames();
             return listOfGames;
         }
         else{
@@ -41,16 +38,16 @@ public class GameService {
     }
     public void joinGame(ReqJoinGame joinGameObj, String authToken) throws DataAccessException {
         if(authDAO.getAuth(authToken) != null) {
-            if(memGameDAO.getGame(joinGameObj.gameID()) != null) {
-                GameData gameData = memGameDAO.getGame(joinGameObj.gameID());
+            if(gameDAO.getGame(joinGameObj.gameID()) != null) {
+                GameData gameData = gameDAO.getGame(joinGameObj.gameID());
                 if(joinGameObj.playerColor() == null) {
                     AuthData authData = authDAO.getAuth(authToken);
                     String username = authData.username();
-                    memGameDAO.joinGame(joinGameObj, username);
+                    gameDAO.joinGame(joinGameObj, username);
                 } else if(joinGameObj.playerColor().equals("WHITE") || joinGameObj.playerColor().equals("BLACK")) {
                     AuthData authData = authDAO.getAuth(authToken);
                     String username = authData.username();
-                    memGameDAO.joinGame(joinGameObj, username);
+                    gameDAO.joinGame(joinGameObj, username);
                 } else {
                     throw new DataAccessException("Bad Request");
                 }
@@ -63,6 +60,6 @@ public class GameService {
         }
     }
     public void clearGames() throws DataAccessException {
-        memGameDAO.clearGames();
+        gameDAO.clearGames();
     }
 }

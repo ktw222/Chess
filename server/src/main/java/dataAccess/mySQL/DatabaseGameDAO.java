@@ -22,11 +22,11 @@ public class DatabaseGameDAO extends DatabaseDAO implements GameDAO {
         ChessGame chessGame = new ChessGame();
         Gson gson = new Gson();
         String stringGame = gson.toJson(chessGame);
-        var statement = "INSERT INTO user (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
+        var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
         //need to serialize the game before updating it
         var updateGame = executeUpdate(statement, null, null, gameName, stringGame);
         try (var conn = DatabaseManager.getConnection()) {
-            statement = "SELECT gameID FROM game WHERE gameName=?";
+            statement = "SELECT gameID FROM games WHERE gameName=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, gameName);
                 try (var rs = ps.executeQuery()) {
@@ -70,19 +70,16 @@ public class DatabaseGameDAO extends DatabaseDAO implements GameDAO {
         }
         else if(joinGameObj.playerColor().equals("BLACK")) {
             if (currGame.blackUsername() == null) {
-                //GameData newData = currGame.setBlackUser(username);
-                var statement = "INSERT INTO user (blackUsername) VALUES (?)";
-                var updateTable = executeUpdate(statement, username);
-                //games.put(currGame.gameID(), newData);
-
+                var statement = "UPDATE games SET blackUsername=? WHERE gameID=?";
+                var updateTable = executeUpdate(statement, username, joinGameObj.gameID());
             } else {
                 throw new DataAccessException("Color already taken");
             }
         }
         else if (joinGameObj.playerColor().equals("WHITE")) {
             if (currGame.whiteUsername() == null) {
-                var statement = "INSERT INTO user (whiteUsername) VALUES (?)";
-                var updateTable = executeUpdate(statement, username);
+                var statement = "UPDATE games SET whiteUsername=? WHERE gameID=?";
+                var updateTable = executeUpdate(statement, username, joinGameObj.gameID());
             } else {
                 throw new DataAccessException("Color already taken");
             }
@@ -90,16 +87,26 @@ public class DatabaseGameDAO extends DatabaseDAO implements GameDAO {
     }
     public void clearGames() throws DataAccessException{
         var statement = "TRUNCATE games";
+        //var statement = "DROP database chess";
         executeUpdate(statement);
     }
     public Collection<GameData> listGames() throws DataAccessException{
         var listOfGames = new ArrayList<GameData>();
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameId FROM game";
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games";
             try (var ps = conn.prepareStatement(statement)) {
                 try (var rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        //listOfGames.add(readGame(rs));
+                        Gson gson = new Gson();
+                        int gameID = rs.getInt("gameID");
+                        String white = rs.getString("whiteUsername");
+                        String black = rs.getString("blackUsername");
+                        String gameName = rs.getString("gameName");
+                        String jsonGame = rs.getString("game");
+                        ChessGame game = gson.fromJson(jsonGame, ChessGame.class);
+                        GameData currGameData = new GameData(gameID, white, black, gameName, game);
+                        //return new UserData(userString, passString, emString);
+                        listOfGames.add(currGameData);
                     }
                 }
             }
@@ -110,17 +117,13 @@ public class DatabaseGameDAO extends DatabaseDAO implements GameDAO {
     }
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS  auth (
+            CREATE TABLE IF NOT EXISTS  games (
               `gameID` int NOT NULL AUTO_INCREMENT,
               `whiteUsername` varchar(256),
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
               `game` blob NOT NULL,
-              PRIMARY KEY (`gameID`),
-              INDEX(whiteUsername),
-              INDEX(blackUsername),
-              INDEX(gameName),
-              INDEX(game)
+              PRIMARY KEY (`gameID`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };

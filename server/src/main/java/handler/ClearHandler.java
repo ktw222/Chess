@@ -2,6 +2,7 @@ package handler;
 import com.google.gson.Gson;
 import dataAccess.*;
 import dataAccess.mySQL.DatabaseAuthDAO;
+import dataAccess.mySQL.DatabaseGameDAO;
 import dataAccess.mySQL.DatabaseUserDAO;
 import service.AuthService;
 import service.GameService;
@@ -13,13 +14,13 @@ public class ClearHandler implements Route{
     public Object handle(Request req, Response res) throws Exception {
         AuthDAO authDao = new DatabaseAuthDAO();
         UserDAO userDAO = new DatabaseUserDAO();
-        MemoryGameDAO memGameDAO = new MemoryGameDAO();
+        GameDAO gameDAO = new DatabaseGameDAO();
         Gson gson = new Gson();
         //UserData request = (UserData)gson.fromJson(req.body(), UserData.class);
 
         UserService userService = new UserService(userDAO, authDao);
         userService.clearUsers();
-        GameService gameService = new GameService(memGameDAO, authDao);
+        GameService gameService = new GameService(gameDAO, authDao);
         gameService.clearGames();
         AuthService authService = new AuthService(userDAO, authDao);
         authService.clearAuths();
