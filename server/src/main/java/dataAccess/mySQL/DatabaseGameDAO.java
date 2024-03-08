@@ -19,13 +19,12 @@ public class DatabaseGameDAO extends DatabaseDAO implements GameDAO {
         configureDatabase();
     }
     public int createGame(String gameName) throws DataAccessException{
-
         ChessGame chessGame = new ChessGame();
         Gson gson = new Gson();
         String stringGame = gson.toJson(chessGame);
         var statement = "INSERT INTO user (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
         //need to serialize the game before updating it
-        var username = executeUpdate(statement, null, null, gameName, stringGame);
+        var updateGame = executeUpdate(statement, null, null, gameName, stringGame);
         try (var conn = DatabaseManager.getConnection()) {
             statement = "SELECT gameID FROM game WHERE gameName=?";
             try (var ps = conn.prepareStatement(statement)) {
@@ -41,10 +40,54 @@ public class DatabaseGameDAO extends DatabaseDAO implements GameDAO {
         }
         return 0;
     }
-    public GameData getGame(int gameID) {
+    public GameData getGame(int gameID) throws DataAccessException{
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT whiteUsername, blackUsername, gameName, game FROM games WHERE gameID=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        Gson gson = new Gson();
+                        String white = rs.getString("whiteUsername");
+                        String black = rs.getString("blackUsername");
+                        String gameName = rs.getString("gameName");
+                        String jsonGame = rs.getString("game");
+                        ChessGame game = gson.fromJson(jsonGame, ChessGame.class);
+                        return new GameData(gameID, white, black, gameName, game);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException("Unable to read data");
+        }
         return null;
     }
-    public void joinGame(ReqJoinGame joinGameObj, String username) throws DataAccessException {}
+    public void joinGame(ReqJoinGame joinGameObj, String username) throws DataAccessException {
+
+        GameData currGame = getGame(joinGameObj.gameID());
+        if(joinGameObj.playerColor() == null){
+            return;
+        }
+        else if(joinGameObj.playerColor().equals("BLACK")) {
+            if (currGame.blackUsername() == null) {
+                //GameData newData = currGame.setBlackUser(username);
+                var statement = "INSERT INTO user (blackUsername) VALUES (?)";
+                var updateTable = executeUpdate(statement, username);
+                //games.put(currGame.gameID(), newData);
+
+            } else {
+                throw new DataAccessException("Color already taken");
+            }
+        }
+        else if (joinGameObj.playerColor().equals("WHITE")) {
+            if (currGame.whiteUsername() == null) {
+                var statement = "INSERT INTO user (whiteUsername) VALUES (?)";
+                var updateTable = executeUpdate(statement, username);
+            } else {
+                throw new DataAccessException("Color already taken");
+            }
+        }
+    }
     public void clearGames() throws DataAccessException{
         var statement = "TRUNCATE games";
         executeUpdate(statement);

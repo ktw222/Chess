@@ -38,11 +38,12 @@ public class DatabaseAuthDAO extends DatabaseDAO implements AuthDAO {
         return null;
     }
     public void deleteAuth(String authToken) throws DataAccessException{
-        var statement = "DELETE FROM auth WHERE auth=?";
+        var statement = "DELETE FROM auth WHERE authToken=?";
         executeUpdate(statement, authToken);
     }
     public void clearAuth()throws DataAccessException{
         var statement = "TRUNCATE auth";
+        //var statement = "DROP database chess";
         executeUpdate(statement);
     }
     private final String[] createStatements = {
@@ -50,8 +51,7 @@ public class DatabaseAuthDAO extends DatabaseDAO implements AuthDAO {
             CREATE TABLE IF NOT EXISTS  auth (
               `username` varchar(256) NOT NULL,
               `authToken` varchar(256) NOT NULL,
-              PRIMARY KEY (`username`),
-              INDEX(authToken)
+              PRIMARY KEY (`authToken`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
