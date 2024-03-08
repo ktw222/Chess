@@ -15,7 +15,7 @@ public class DatabaseDAO {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
                     if (param instanceof String p) db.setString(i + 1, p);
-                        else if (param instanceof Integer p) db.setInt(i + 1, p);
+                    else if (param instanceof Integer p) db.setInt(i + 1, p);
                         //else if (param instanceof PetType p) db.setString(i + 1, p.toString());
                     else if (param == null) db.setNull(i + 1, NULL);
                 }

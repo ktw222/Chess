@@ -1,10 +1,8 @@
 package handler;
 
 import com.google.gson.Gson;
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryUserDAO;
-import dataAccess.UserDAO;
+import dataAccess.*;
+import dataAccess.mySQL.DatabaseAuthDAO;
 import dataAccess.mySQL.DatabaseUserDAO;
 import model.AuthData;
 import model.UserData;
@@ -16,14 +14,14 @@ import spark.Route;
 public class LogoutHandler implements Route {
     @Override
     public Object handle(Request req, Response res) throws Exception {
-        MemoryAuthDAO memAuthDao = new MemoryAuthDAO();
+        AuthDAO authDao = new DatabaseAuthDAO();
         UserDAO userDAO = new DatabaseUserDAO();
         Gson gson = new Gson();
         String authToken = req.headers("Authorization");
         if(authToken == null ) {
             throw new DataAccessException("Bad Request");
         }
-        UserService service = new UserService(userDAO, memAuthDao);
+        UserService service = new UserService(userDAO, authDao);
         service.logout(authToken);
         return "{}";
     }

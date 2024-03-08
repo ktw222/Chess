@@ -4,13 +4,13 @@ import dataAccess.*;
 
 public class AuthService {
     private final UserDAO userDAO;
-    private final MemoryAuthDAO memAuthDAO;
+    private final AuthDAO authDAO;
 
-    public AuthService(UserDAO userDAO, MemoryAuthDAO memAuthDAO) {
+    public AuthService(UserDAO userDAO, AuthDAO authDAO) {
         this.userDAO = userDAO;
-        this.memAuthDAO = memAuthDAO;
+        this.authDAO = authDAO;
     }
     public void clearAuths() throws DataAccessException {
-        memAuthDAO.clearAuth();
+        authDAO.clearAuth();
     }
 }

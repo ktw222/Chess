@@ -14,9 +14,9 @@ public class DatabaseAuthDAO extends DatabaseDAO implements AuthDAO {
     }
     public AuthData createAuth(String username) throws DataAccessException{
         String authToken = UUID.randomUUID().toString();
-        var statement = "INSERT INTO auth (username, authToken) VALUES (?, ?)";
-        var auth = executeUpdate(statement, username, authToken);
-        return new AuthData(username, authToken);
+        var statement = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
+        var auth = executeUpdate(statement, authToken, username);
+        return new AuthData(authToken, username);
         //return null;
     }
     public AuthData getAuth(String authToken) throws DataAccessException {
@@ -28,7 +28,7 @@ public class DatabaseAuthDAO extends DatabaseDAO implements AuthDAO {
                     if (rs.next()) {
                         String userString = rs.getString("username");
                         String authString = rs.getString("authToken");
-                        return new AuthData(userString, authString);
+                        return new AuthData(authString, userString);
                     }
                 }
             }
