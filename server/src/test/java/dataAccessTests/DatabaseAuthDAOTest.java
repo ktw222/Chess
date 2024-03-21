@@ -31,6 +31,9 @@ class DatabaseAuthDAOTest {
         Assertions.assertEquals(true, true);
 
     }
+    @Test
+    void getBadAuth() throws DataAccessException {
+    }
 
     @Test
     void deleteAuth() {

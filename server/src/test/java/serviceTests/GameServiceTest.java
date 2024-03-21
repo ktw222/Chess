@@ -14,10 +14,6 @@ import reqRes.ReqJoinGame;
 import service.GameService;
 import service.UserService;
 
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 class GameServiceTest {
     private MemoryAuthDAO memoryAuthDAO;
     private MemoryGameDAO memoryGameDAO;

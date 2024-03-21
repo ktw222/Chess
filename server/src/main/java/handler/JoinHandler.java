@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import dataAccess.*;
 import dataAccess.mySQL.DatabaseAuthDAO;
 import dataAccess.mySQL.DatabaseGameDAO;
-import reqRes.ReqCreateGame;
 import reqRes.ReqJoinGame;
 import service.GameService;
 import spark.Request;

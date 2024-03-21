@@ -3,18 +3,14 @@ package handler;
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
 import dataAccess.GameDAO;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
 import dataAccess.mySQL.DatabaseAuthDAO;
 import dataAccess.mySQL.DatabaseGameDAO;
 import model.GameData;
-import reqRes.ReqCreateGame;
 import service.GameService;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 public class ListGamesHandler implements Route {

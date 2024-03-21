@@ -1,6 +1,5 @@
 package dataAccess;
 
-import chess.ChessGame;
 import model.GameData;
 import reqRes.ReqJoinGame;
 

@@ -4,8 +4,6 @@ import chess.ChessGame;
 import model.GameData;
 import reqRes.ReqJoinGame;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 

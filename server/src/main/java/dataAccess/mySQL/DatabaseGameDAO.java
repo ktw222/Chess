@@ -6,8 +6,6 @@ import dataAccess.DataAccessException;
 import dataAccess.DatabaseManager;
 import dataAccess.GameDAO;
 import model.GameData;
-import model.UserData;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import reqRes.ReqJoinGame;
 
 import java.sql.SQLException;

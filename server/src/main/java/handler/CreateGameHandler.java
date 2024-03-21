@@ -6,7 +6,6 @@ import dataAccess.mySQL.DatabaseAuthDAO;
 import dataAccess.mySQL.DatabaseGameDAO;
 import reqRes.ReqCreateGame;
 import service.GameService;
-import service.UserService;
 import spark.Request;
 import spark.Response;
 import spark.Route;
