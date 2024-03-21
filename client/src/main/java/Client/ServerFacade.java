@@ -1,3 +1,4 @@
+package Client;
 
 import com.google.gson.Gson;
 import model.AuthData;
@@ -5,7 +6,6 @@ import model.GameData;
 import model.UserData;
 import reqRes.*; //move to shared
 //make new exception
-
 import java.io.*;
 import java.net.*;
 public class ServerFacade {
@@ -16,33 +16,34 @@ public class ServerFacade {
     }
 
 
-    public AuthData register(UserData user) throws ResponseException {
+    public AuthData register(String username, String password, String email) throws ResponseException {
         var path = "/user";
+        UserData user = new UserData(username, password, email);
         return this.makeRequest("POST", path, user, AuthData.class);
     }
 
-    public void logout(String AuthToken) throws ResponseException {
-
+    public void logout(String authToken) throws ResponseException {
         var path = "/session";
         this.makeRequest("DELETE", path, null, null);
     }
-    public AuthData login(UserData user) throws ResponseException {
+    public AuthData login(String username, String password) throws ResponseException {
         var path = "/session";
+        UserData user = new UserData(username, password, null);
         return this.makeRequest("POST", path, user, AuthData.class);
     }
-    public int createGame(String authToken, String gameName) throws ResponseException {
-        var path = "/game"; //match phase 3
-        //gameId?
-        int gameID;
-        return this.makeRequest("POST", path, authToken, gameID);
-    }
-    public void joinGame(ReqJoinGame joinGameObj, String authToken) throws ResponseException{
+//    public int createGame(String authToken, String gameName) throws Client.ResponseException {
+//        var path = "/game"; //match phase 3
+//        //gameId?
+//        int gameID;
+//        return this.makeRequest("POST", path, gameName, gameID);
+//    }
+    public void joinGame(ReqJoinGame joinGameObj, String authToken) throws ResponseException {
         var path = "/game";
         this.makeRequest("PUT", path, joinGameObj, null);
     }
 
     public GameData[] listGames() throws ResponseException {
-        var path = "/pet";
+        var path = "/game";
         record listGameResponse(GameData[] game) {
         }
         var response = this.makeRequest("GET", path, null, listGameResponse.class);

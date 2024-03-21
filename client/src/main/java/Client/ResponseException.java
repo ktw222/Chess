@@ -1,3 +1,5 @@
+package Client;
+
 public class ResponseException extends Exception{
 
 
