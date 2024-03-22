@@ -1,43 +1,90 @@
 package Client;
 
+import com.google.gson.Gson;
+import reqRes.ReqCreateGame;
+import ui.PostLoginUi;
+
+import java.util.Arrays;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
 public class PostLoginClient {
-//    private final Client.PreLoginClient client;
-//
-//    public PreLoginUi(String serverUrl) {
-//        client = new Client.PreLoginClient(serverUrl, this);
-//    }
-//
-//    public void run() {
-//        System.out.println("\uD83D\uDC36 Welcome to Chess. Sign in or Register to start.");
-//        System.out.print(client.help());
-//
-//        Scanner scanner = new Scanner(System.in);
-//        var result = "";
-//        while (!result.equals("quit")) {
-//            printPrompt();
-//            String line = scanner.nextLine();
-//
-//            try {
-//                result = client.eval(line);
-//                System.out.print(SET_TEXT_COLOR_BLUE + result);
-//            } catch (Throwable e) {
-//                var msg = e.toString();
-//                System.out.print(msg);
-//            }
+    private String visitorName = null;
+    private final ServerFacade server;
+    private final String serverUrl;
+    private String authToken;
+
+    public PostLoginClient(ServerFacade server, String serverUrl, PostLoginUi postLoginUi) {
+        //server = new ServerFacade(serverUrl);
+        this.server = server;
+        this.serverUrl = serverUrl;
+        //this.authToken = server.authToken;
+        //this.authToken = authToken;
+    }
+
+    public String eval(String input, String authToken) {
+        try {
+            this.authToken = authToken;
+            var tokens = input.toLowerCase().split(" ");
+            var cmd = (tokens.length > 0) ? tokens[0] : "help";
+            var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            return switch (cmd) {
+                case "listgames" -> listGames();
+                case "logout" -> logOut();
+                //case "joingame" -> joinGame(params);
+                case "creategame" -> createGame(params);
+                case "quit" -> "quit";
+                default -> help();
+            };
+        } catch (ResponseException ex) {
+            return ex.getMessage();
+        }
+
+    }
+
+    public String createGame(String... params) throws ResponseException {
+        if (params.length >= 1) {
+            String gameName = params[0];
+            int gameID = server.createGame(authToken, new ReqCreateGame(gameName));
+            return String.format("You created %s. Assigned ID: %d", gameName, gameID);
+
+        }
+        throw new ResponseException(400, "Expected: <gameName>");
+    }
+//    public String joinGame(String... params) throws ResponseException {
+//        if (params.length >= 1) {
+//            int gameID = Integer.parseInt(params[0]);
+//            server
 //        }
-//        System.out.println();
 //    }
-//
-//    public void notify(Notification notification) {
-//        System.out.println(SET_TEXT_COLOR_RED + notification.message());
-//        printPrompt();
-//    }
-//
-//    private void printPrompt() {
-//        System.out.print("\n" + RESET + ">>> " + SET_TEXT_COLOR_GREEN);
-//    }
+
+    public String listGames() throws ResponseException {
+        var games = server.listGames(authToken);
+        var result = new StringBuilder();
+        var gson = new Gson();
+        for (var game : games) {
+            result.append(gson.toJson(game)).append('\n');
+        }
+        return result.toString();
+    }
+
+    public String logOut() throws ResponseException {
+        server.logout(authToken);
+        return String.format("Logout successful");
+    }
+
+
+
+    public String help() {
+            return """
+                    - CreateGame <gameName>
+                    - JoinGame <gameID>
+                    - ListGames <>
+                    - Logout
+                    - Quit
+                    """;
+
+    }
+
 }

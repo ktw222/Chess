@@ -118,11 +118,6 @@ public class GameplayUi {
         out.print(SET_TEXT_COLOR_WHITE);
     }
 
-    private static void setRed(PrintStream out) {
-        out.print(SET_BG_COLOR_RED);
-        out.print(SET_TEXT_COLOR_RED);
-    }
-
     private static void setBlack(PrintStream out) {
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_BLACK);
@@ -136,12 +131,26 @@ public class GameplayUi {
         out.print(SET_TEXT_COLOR_LIGHT_GREY);
     }
 
-    private static void printPlayer(PrintStream out, String player) {
+    private static void printPlayer(PrintStream out, String player, boolean isDark, boolean teamColorWhite) {
         out.print(SET_BG_COLOR_WHITE);
         out.print(SET_TEXT_COLOR_BLACK);
-
-        out.print(player);
-
-        setWhite(out);
+        if(isDark == true && teamColorWhite == true) {
+            out.print(SET_TEXT_COLOR_DARK_GREY);
+            out.print(SET_TEXT_COLOR_WHITE);
+            out.print(player);
+        } else if(isDark == true && teamColorWhite != true) {
+            out.print(SET_TEXT_COLOR_DARK_GREY);
+            out.print(SET_TEXT_COLOR_BLACK);
+            out.print(player);
+        }else if(isDark != true && teamColorWhite != true) {
+            out.print(SET_TEXT_COLOR_LIGHT_GREY);
+            out.print(SET_TEXT_COLOR_BLACK);
+            out.print(player);
+        }else if(isDark != true && teamColorWhite == true) {
+            out.print(SET_TEXT_COLOR_LIGHT_GREY);
+            out.print(SET_TEXT_COLOR_WHITE);
+            out.print(player);
+        }
+        //setWhite(out);
     }
 }

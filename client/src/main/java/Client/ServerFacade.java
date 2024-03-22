@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.*;
 public class ServerFacade {
     private final String serverUrl;
+    public String authToken;
 
     public ServerFacade(String url) {
         serverUrl = url;
@@ -19,46 +20,55 @@ public class ServerFacade {
     public AuthData register(String username, String password, String email) throws ResponseException {
         var path = "/user";
         UserData user = new UserData(username, password, email);
-        return this.makeRequest("POST", path, user, AuthData.class);
+        AuthData authData = this.makeRequest("POST", path, null, user, AuthData.class);
+        this.authToken = authData.authToken();
+        return authData;
     }
 
     public void logout(String authToken) throws ResponseException {
         var path = "/session";
-        this.makeRequest("DELETE", path, null, null);
+        this.makeRequest("DELETE", path, authToken, null, null);
     }
     public AuthData login(String username, String password) throws ResponseException {
         var path = "/session";
         UserData user = new UserData(username, password, null);
-        return this.makeRequest("POST", path, user, AuthData.class);
+        AuthData authData = this.makeRequest("POST", path, null, user, AuthData.class);
+        this.authToken = authData.authToken();
+        return authData;
     }
-//    public int createGame(String authToken, String gameName) throws Client.ResponseException {
-//        var path = "/game"; //match phase 3
-//        //gameId?
-//        int gameID;
-//        return this.makeRequest("POST", path, gameName, gameID);
-//    }
+    public int createGame(String authToken, ReqCreateGame requestObj) throws Client.ResponseException {
+        var path = "/game"; //match phase 3
+        return this.makeRequest("POST", path, authToken, requestObj, GameData.class).gameID();
+    }
     public void joinGame(ReqJoinGame joinGameObj, String authToken) throws ResponseException {
         var path = "/game";
-        this.makeRequest("PUT", path, joinGameObj, null);
+        this.makeRequest("PUT", path, authToken, joinGameObj, null);
+    }
+    public void clear() throws ResponseException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null, null, null);
     }
 
-    public GameData[] listGames() throws ResponseException {
+    public GameData[] listGames(String authToken) throws ResponseException {
         var path = "/game";
         record listGameResponse(GameData[] game) {
         }
-        var response = this.makeRequest("GET", path, null, listGameResponse.class);
+        var response = this.makeRequest("GET", path, authToken, null, listGameResponse.class);
         return response.game();
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
+    private <T> T makeRequest(String method, String path, String authToken, Object request, Class<T> responseClass) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
             http.setDoOutput(true);
-
+            if(authToken != null) {
+                http.setRequestProperty("Authorization", authToken);
+            }
             writeBody(request, http);
             http.connect();
+            //writeBody(request, http); //closebody
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
         } catch (Exception ex) {
@@ -67,12 +77,14 @@ public class ServerFacade {
     }
 
 
-    private static void writeBody(Object request, HttpURLConnection http) throws IOException {
+    private static void writeBody(Object request, HttpURLConnection http) throws IOException, ResponseException{
         if (request != null) {
             http.addRequestProperty("Content-Type", "application/json");
             String reqData = new Gson().toJson(request);
             try (OutputStream reqBody = http.getOutputStream()) {
                 reqBody.write(reqData.getBytes());
+            } catch(Exception ex){
+                throw new ResponseException(500, ex.getMessage());
             }
         }
     }
