@@ -8,6 +8,10 @@ import reqRes.*; //move to shared
 //make new exception
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public class ServerFacade {
     private final String serverUrl;
     public String authToken;
@@ -51,10 +55,12 @@ public class ServerFacade {
 
     public GameData[] listGames(String authToken) throws ResponseException {
         var path = "/game";
-        record listGameResponse(GameData[] game) {
+        record listGameResponse(GameData[] games) {
         }
-        var response = this.makeRequest("GET", path, authToken, null, listGameResponse.class);
-        return response.game();
+        //List<GameData> game = new ArrayList<>();
+        String listOfGames = null;
+        listGameResponse response = this.makeRequest("GET", path, authToken,null, listGameResponse.class);
+        return response.games();
     }
 
     private <T> T makeRequest(String method, String path, String authToken, Object request, Class<T> responseClass) throws ResponseException {

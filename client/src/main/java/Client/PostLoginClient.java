@@ -1,15 +1,11 @@
 package Client;
 
-import com.google.gson.Gson;
 import model.GameData;
 import reqRes.ReqCreateGame;
 import reqRes.ReqJoinGame;
 import ui.PostLoginUi;
 
 import java.util.Arrays;
-import java.util.Scanner;
-
-import static ui.EscapeSequences.*;
 
 public class PostLoginClient {
     private String visitorName = null;
@@ -50,6 +46,7 @@ public class PostLoginClient {
             String playerColor = null;
             if(params.length > 1) {
                 playerColor = params[1];
+                playerColor = playerColor.toUpperCase();
             }
             server.joinGame(new ReqJoinGame(gameID, playerColor), authToken);
             return String.format("You successfully joined your game!\n");
@@ -75,13 +72,15 @@ public class PostLoginClient {
 //    }
 
     public String listGames() throws ResponseException {
-        var games = server.listGames(authToken);
-        var result = new StringBuilder();
-        var gson = new Gson();
-        for (var game : games) {
-            result.append(gson.toJson(game)).append('\n');
+        GameData [] games = server.listGames(authToken);
+        StringBuilder result = new StringBuilder();
+        for(GameData game : games) {
+            result.append(game.toString());
+            result.append("\n");
         }
         return result.toString();
+
+        //return result.toString();
     }
 
     public String logOut() throws ResponseException {
