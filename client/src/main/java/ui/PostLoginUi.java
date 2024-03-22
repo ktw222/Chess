@@ -7,6 +7,8 @@ import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
+
+import Client.ResponseException;
 import Client.ServerFacade;
 
 public class PostLoginUi {
@@ -16,6 +18,7 @@ public class PostLoginUi {
     private GameplayUi gameplayUi;
     public PostLoginUi(ServerFacade server,String serverUrl) {
         client = new PostLoginClient(server, serverUrl, this);
+        gameplayUi = new GameplayUi();
     }
 
     public void run(PreLoginClient client) {
@@ -32,6 +35,8 @@ public class PostLoginUi {
                 System.out.print(SET_TEXT_COLOR_GREEN + result);
                 if(result.equals("Logout successful")) {
                     return;
+                } else if(result.equals("You successfully joined your game!\n")) {
+                    gameplayUi.main();
                 }
             } catch (Throwable e) {
                 var msg = e.toString();

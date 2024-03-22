@@ -1,7 +1,9 @@
 package Client;
 
 import com.google.gson.Gson;
+import model.GameData;
 import reqRes.ReqCreateGame;
+import reqRes.ReqJoinGame;
 import ui.PostLoginUi;
 
 import java.util.Arrays;
@@ -32,7 +34,7 @@ public class PostLoginClient {
             return switch (cmd) {
                 case "listgames" -> listGames();
                 case "logout" -> logOut();
-                //case "joingame" -> joinGame(params);
+                case "joingame" -> joinGame(params);
                 case "creategame" -> createGame(params);
                 case "quit" -> "quit";
                 default -> help();
@@ -41,6 +43,19 @@ public class PostLoginClient {
             return ex.getMessage();
         }
 
+    }
+    public String joinGame(String... params) throws ResponseException {
+        if (params.length >= 1) {
+            int gameID = Integer.parseInt(params[0]);
+            String playerColor = null;
+            if(params.length > 1) {
+                playerColor = params[1];
+            }
+            server.joinGame(new ReqJoinGame(gameID, playerColor), authToken);
+            return String.format("You successfully joined your game!\n");
+
+        }
+        throw new ResponseException(400, "Expected: <gameID playerColor>");
     }
 
     public String createGame(String... params) throws ResponseException {
