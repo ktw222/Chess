@@ -6,12 +6,14 @@ import reqRes.ReqJoinGame;
 import ui.PostLoginUi;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class PostLoginClient {
     private String visitorName = null;
     private final ServerFacade server;
     private final String serverUrl;
     private String authToken;
+    private HashMap<Integer, Integer> gameList = new HashMap<>();
 
     public PostLoginClient(ServerFacade server, String serverUrl, PostLoginUi postLoginUi) {
         //server = new ServerFacade(serverUrl);
@@ -48,7 +50,7 @@ public class PostLoginClient {
                 playerColor = params[1];
                 playerColor = playerColor.toUpperCase();
             }
-            server.joinGame(new ReqJoinGame(gameID, playerColor), authToken);
+            server.joinGame(new ReqJoinGame(gameList.get(gameID), playerColor), authToken);
             return String.format("You successfully joined your game!\n");
 
         }
@@ -74,9 +76,23 @@ public class PostLoginClient {
     public String listGames() throws ResponseException {
         GameData [] games = server.listGames(authToken);
         StringBuilder result = new StringBuilder();
+        int counter = 1;
+        //HashMap<Integer, Integer> mappedIDs= new HashMap<Integer, Integer>();
         for(GameData game : games) {
-            result.append(game.toString());
+            result.append(counter + ". " + game.gameName() + ": Players: ");
+            if (game.whiteUsername() != null) {
+                result.append("White: " + game.whiteUsername()+ " ");
+            }else {
+                result.append("White: ___ ");
+            }
+            if (game.blackUsername() != null) {
+                result.append("Black: " + game.blackUsername());
+            } else {
+                result.append("Black: ___");
+            }
             result.append("\n");
+            gameList.put(counter, game.gameID());
+            counter++;
         }
         return result.toString();
 

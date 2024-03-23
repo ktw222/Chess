@@ -27,17 +27,50 @@ public class GameplayUi {
     //private static Random rand = new Random();
 
 
+    private static void drawHeaders(PrintStream out) {
+        setBlack(out);
+        String[] headers = { "   ", " a ", " b ", " c "," d "," e ", " f ", " g ", " h "};
+        for (int boardCol = 0; boardCol <= BOARD_SIZE_IN_SQUARES; ++boardCol) {
+            drawHeader(out, headers[boardCol]);
+        }
+        out.println();
+    }
+    private static void drawReversedHeaders(PrintStream out) {
+        setBlack(out);
+        String[] headers = { "   ", " h ", " g ", " f "," e "," d ", " c ", " b ", " a "};
+        for (int boardCol = 0; boardCol <= BOARD_SIZE_IN_SQUARES; ++boardCol) {
+            drawHeader(out, headers[boardCol]);
+        }
+        out.println();
+    }
+
+    private static void drawHeader(PrintStream out, String headerText) {
+        printHeaderText(out, headerText);
+    }
+    private static void printHeaderText(PrintStream out, String player) {
+        out.print(SET_BG_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_GREEN);
+
+        out.print(player);
+
+        setBlack(out);
+    }
+
+
     public static void main() { //String[] args
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
         out.print(ERASE_SCREEN);
+
         ChessGame chessGame = new ChessGame();
 
         drawChessBoard(out, chessGame);
+        drawReversedHeaders(out);
 
         out.print('\n');
 
         drawReverseChessBoard(out, chessGame);
+        drawHeaders(out);
 
 
         out.print(SET_BG_COLOR_BLACK);
@@ -52,11 +85,14 @@ public class GameplayUi {
             chessGame.getBoard().resetBoard();
         }
         ChessBoard chessBoard = chessGame.getBoard();
+        drawReversedHeaders(out);
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; row++) {
-            setBlack(out);
-            out.print(EMPTY);
-            for (int col = 0; col < BOARD_SIZE_IN_SQUARES; col++) {
-                ChessPosition currPosition = new ChessPosition(row+1, col+1);
+            out.print(SET_BG_COLOR_BLACK);
+            out.print(SET_TEXT_COLOR_GREEN);
+            int row2Print = row + 1;
+            out.print(" "+ row2Print +" ");
+            for (int col = BOARD_SIZE_IN_SQUARES - 1; col >= 0; col--) {
+                ChessPosition currPosition = new ChessPosition(row + 1, col + 1);
                 if ((row + col) % 2 == 0) {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
@@ -69,6 +105,7 @@ public class GameplayUi {
                         setDarkGray(out);
                         out.print(EMPTY);
                     }
+
                     setBlack(out);
                 } else {
                     if (chessBoard.getPiece(currPosition) != null) {
@@ -85,10 +122,14 @@ public class GameplayUi {
                     setBlack(out);
                 }
             }
+            out.print(SET_BG_COLOR_BLACK);
+            out.print(SET_TEXT_COLOR_GREEN);
+            out.print(" "+ row2Print +" ");
             setBlack(out);
             out.println();
         }
     }
+
     private static void drawReverseChessBoard(PrintStream out, ChessGame chessGame) {
         ChessBoard newChessBoard = new ChessBoard();
         if (chessGame.getBoard() == null) {
@@ -96,9 +137,12 @@ public class GameplayUi {
             chessGame.getBoard().resetBoard();
         }
         ChessBoard chessBoard = chessGame.getBoard();
+        drawHeaders(out);
         for (int row = BOARD_SIZE_IN_SQUARES - 1; row >= 0; row--) { // Changed loop condition here
-            setBlack(out);
-            out.print(EMPTY);
+            out.print(SET_BG_COLOR_BLACK);
+            out.print(SET_TEXT_COLOR_GREEN);
+            int row2print = row + 1;
+            out.print(" "+ row2print +" ");
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; col++) {
                 ChessPosition currPosition = new ChessPosition(row + 1, col + 1);
                 if ((row + col) % 2 == 0) {
@@ -113,7 +157,7 @@ public class GameplayUi {
                         setDarkGray(out);
                         out.print(EMPTY);
                     }
-                    setBlack(out);
+
                 } else {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
@@ -126,9 +170,13 @@ public class GameplayUi {
                         setLightGray(out);
                         out.print(EMPTY);
                     }
-                    setBlack(out);
+                    out.print(SET_BG_COLOR_BLACK);
+                    out.print(SET_TEXT_COLOR_GREEN);
                 }
             }
+            out.print(SET_BG_COLOR_BLACK);
+            out.print(SET_TEXT_COLOR_GREEN);
+            out.print(" "+ row2print +" ");
             setBlack(out);
             out.println();
         }
