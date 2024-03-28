@@ -16,11 +16,9 @@ public class PostLoginClient {
     private HashMap<Integer, Integer> gameList = new HashMap<>();
 
     public PostLoginClient(ServerFacade server, String serverUrl, PostLoginUi postLoginUi) {
-        //server = new ServerFacade(serverUrl);
         this.server = server;
         this.serverUrl = serverUrl;
-        //this.authToken = server.authToken;
-        //this.authToken = authToken;
+
     }
 
     public String eval(String input, String authToken) {
@@ -66,12 +64,6 @@ public class PostLoginClient {
         }
         throw new ResponseException(400, "Expected: <gameName>");
     }
-//    public String joinGame(String... params) throws ResponseException {
-//        if (params.length >= 1) {
-//            int gameID = Integer.parseInt(params[0]);
-//            server
-//        }
-//    }
 
     public String listGames() throws ResponseException {
         GameData [] games = server.listGames(authToken);
@@ -96,7 +88,6 @@ public class PostLoginClient {
         }
         return result.toString();
 
-        //return result.toString();
     }
 
     public String logOut() throws ResponseException {

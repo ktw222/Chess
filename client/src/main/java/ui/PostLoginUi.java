@@ -18,7 +18,7 @@ public class PostLoginUi {
     private GameplayUi gameplayUi;
     public PostLoginUi(ServerFacade server,String serverUrl) {
         client = new PostLoginClient(server, serverUrl, this);
-        gameplayUi = new GameplayUi();
+        gameplayUi = new GameplayUi(server, serverUrl);
     }
 
     public void run(PreLoginClient client) {

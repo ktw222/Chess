@@ -1,5 +1,9 @@
 package ui;
 
+import Client.GameplayClient;
+import Client.PostLoginClient;
+import Client.PreLoginClient;
+import Client.ServerFacade;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
@@ -9,6 +13,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 
 import static ui.EscapeSequences.*;
@@ -24,6 +29,7 @@ public class GameplayUi {
     private static final String KNIGHT = " N ";
     private static final String BISHOP = " B ";
     private static final String ROOK = " R ";
+    private GameplayClient client;
     //private static Random rand = new Random();
 
 
@@ -43,17 +49,48 @@ public class GameplayUi {
         }
         out.println();
     }
-
     private static void drawHeader(PrintStream out, String headerText) {
         printHeaderText(out, headerText);
     }
     private static void printHeaderText(PrintStream out, String player) {
         out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_GREEN);
-
+        out.print(SET_TEXT_COLOR_MAGENTA);
         out.print(player);
-
         setBlack(out);
+    }
+    public GameplayUi(ServerFacade server, String serverUrl) {
+        client = new GameplayClient(server, serverUrl, this);
+    }
+    public void run(PreLoginClient client) {
+        System.out.println(SET_TEXT_COLOR_MAGENTA + "Welcome to your game!");
+
+        Scanner scanner = new Scanner(System.in);
+        var result = "";
+        while (!result.equals("quit")) {
+            printPrompt();
+            String line = scanner.nextLine();
+
+            try {
+                result = this.client.eval(line, client.authToken);
+                System.out.print(SET_TEXT_COLOR_MAGENTA + result);
+                if(result.equals("Leaving game")) {
+                    return;
+                }
+            } catch (Throwable e) {
+                var msg = e.toString();
+                System.out.print(msg);
+            }
+        }
+        System.out.println();
+    }
+
+    public void notify(String message) {
+        System.out.println(SET_TEXT_COLOR_RED + message);
+        printPrompt();
+    }
+
+    private void printPrompt() {
+        System.out.print("\n" + RESET + ">>> " + SET_TEXT_COLOR_WHITE);
     }
 
 
@@ -88,7 +125,7 @@ public class GameplayUi {
         drawReversedHeaders(out);
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; row++) {
             out.print(SET_BG_COLOR_BLACK);
-            out.print(SET_TEXT_COLOR_GREEN);
+            out.print(SET_TEXT_COLOR_MAGENTA);
             int row2Print = row + 1;
             out.print(" "+ row2Print +" ");
             for (int col = BOARD_SIZE_IN_SQUARES - 1; col >= 0; col--) {
@@ -123,7 +160,7 @@ public class GameplayUi {
                 }
             }
             out.print(SET_BG_COLOR_BLACK);
-            out.print(SET_TEXT_COLOR_GREEN);
+            out.print(SET_TEXT_COLOR_MAGENTA);
             out.print(" "+ row2Print +" ");
             setBlack(out);
             out.println();
@@ -140,7 +177,7 @@ public class GameplayUi {
         drawHeaders(out);
         for (int row = BOARD_SIZE_IN_SQUARES - 1; row >= 0; row--) { // Changed loop condition here
             out.print(SET_BG_COLOR_BLACK);
-            out.print(SET_TEXT_COLOR_GREEN);
+            out.print(SET_TEXT_COLOR_MAGENTA);
             int row2print = row + 1;
             out.print(" "+ row2print +" ");
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; col++) {
@@ -171,11 +208,11 @@ public class GameplayUi {
                         out.print(EMPTY);
                     }
                     out.print(SET_BG_COLOR_BLACK);
-                    out.print(SET_TEXT_COLOR_GREEN);
+                    out.print(SET_TEXT_COLOR_MAGENTA);
                 }
             }
             out.print(SET_BG_COLOR_BLACK);
-            out.print(SET_TEXT_COLOR_GREEN);
+            out.print(SET_TEXT_COLOR_MAGENTA);
             out.print(" "+ row2print +" ");
             setBlack(out);
             out.println();
