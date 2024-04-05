@@ -1,5 +1,6 @@
 package Client;
 
+import chess.ChessGame;
 import model.GameData;
 import reqRes.ReqCreateGame;
 import reqRes.ReqJoinGame;
@@ -49,7 +50,13 @@ public class PostLoginClient {
                 playerColor = playerColor.toUpperCase();
             }
             server.joinGame(new ReqJoinGame(gameList.get(gameID), playerColor), authToken);
-            return String.format("You successfully joined your game!\n");
+            if(playerColor.equals(chess.ChessGame.TeamColor.WHITE)) {
+                return String.format("You successfully joined your game as white player!\n");
+            } else if(playerColor.equals(ChessGame.TeamColor.BLACK)) {
+                return String.format("You successfully joined your game as black player!\n");
+            } else {
+                return String.format("You successfully joined your game as observer!\n");
+            }
 
         }
         throw new ResponseException(400, "Expected: <gameID playerColor>");

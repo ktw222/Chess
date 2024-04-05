@@ -61,7 +61,7 @@ public class GameplayUi {
     public GameplayUi(ServerFacade server, String serverUrl) {
         client = new GameplayClient(server, serverUrl, this);
     }
-    public void run(PreLoginClient client) {
+    public void run(PreLoginClient client, String joinType) {
         System.out.println(SET_TEXT_COLOR_MAGENTA + "Welcome to your game!");
 
         Scanner scanner = new Scanner(System.in);
@@ -218,6 +218,7 @@ public class GameplayUi {
             out.println();
         }
     }
+
 
     private static void printPlayer(PrintStream out, ChessBoard chessBoard, ChessPosition currPosition) {
         switch (chessBoard.getPiece(currPosition).getPieceType()) {

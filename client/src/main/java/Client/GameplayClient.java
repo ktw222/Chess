@@ -8,6 +8,7 @@ import ui.PostLoginUi;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Scanner;
 
 public class GameplayClient {
     private String visitorName = null;
@@ -104,8 +105,23 @@ public class GameplayClient {
         return String.format("Leaving game");
     }
     public String resign() throws ResponseException {
+        String.format("Resigning will cause you to forfeit the game. Are you sure you wish to resign?");
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.nextLine();
+        var tokens = input.toLowerCase().split(" ");
+        var cmd = (tokens.length > 0) ? tokens[0] : "help";
+        var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        switch (cmd) {
+            case "yes" -> {
+                return String.format("You resigned");
+            }
+            case "no" -> {
+                return String.format("You successfully canceled your resignation");
+            }
+        }
+
         //server.logout(authToken);
-        return String.format("You resigned");
+        throw new ResponseException(400, "Expected: <YES> <NO>");
     }
 
 

@@ -35,8 +35,12 @@ public class PostLoginUi {
                 System.out.print(SET_TEXT_COLOR_GREEN + result);
                 if(result.equals("Logout successful")) {
                     return;
-                } else if(result.equals("You successfully joined your game!\n")) {
-                    gameplayUi.main();
+                } else if(result.equals("You successfully joined your game as white player!\n")) {
+                    gameplayUi.run(client, "WHITE");
+                } else if(result.equals("You successfully joined your game as black player!\n")) {
+                    gameplayUi.run(client, "BLACK");
+                } else if(result.equals("You successfully joined your game as observer!\n")) {
+                    gameplayUi.run(client, "OBSERVER");
                 }
             } catch (Throwable e) {
                 var msg = e.toString();
