@@ -33,7 +33,7 @@ public class GameplayClient {
                 case "possiblemoves" -> highlightMoves(params);
                 case "makemove" -> makeMoves(params);
                 case "resign" -> resign();
-                case "redraw" -> createGame(params);
+                case "redraw" -> redrawBoard();
                 case "leaveGame " -> leaveGame();
                 case "quit" -> "quit";
                 default -> help();
@@ -66,39 +66,11 @@ public class GameplayClient {
         throw new ResponseException(400, "Expected: currPieceRow currPieceCol moveRow moveCol promotionChoice");
     }
 
-    public String createGame(String... params) throws ResponseException {
-        if (params.length >= 1) {
-            String gameName = params[0];
-            int gameID = server.createGame(authToken, new ReqCreateGame(gameName));
-            return String.format("You created %s. Assigned ID: %d", gameName, gameID);
-
-        }
-        throw new ResponseException(400, "Expected: <gameName>");
+    public String redrawBoard() throws ResponseException {
+        return String.format("Board successfully redrawn!");
     }
 
-    public String listGames() throws ResponseException {
-        GameData[] games = server.listGames(authToken);
-        StringBuilder result = new StringBuilder();
-        int counter = 1;
-        //HashMap<Integer, Integer> mappedIDs= new HashMap<Integer, Integer>();
-        for(GameData game : games) {
-            result.append(counter + ". " + game.gameName() + ": Players: ");
-            if (game.whiteUsername() != null) {
-                result.append("White: " + game.whiteUsername()+ " ");
-            }else {
-                result.append("White: ___ ");
-            }
-            if (game.blackUsername() != null) {
-                result.append("Black: " + game.blackUsername());
-            } else {
-                result.append("Black: ___");
-            }
-            result.append("\n");
-            gameList.put(counter, game.gameID());
-            counter++;
-        }
-        return result.toString();
-    }
+
 
     public String leaveGame() throws ResponseException {
         //server.logout(authToken);

@@ -30,6 +30,9 @@ public class GameplayUi {
     private static final String BISHOP = " B ";
     private static final String ROOK = " R ";
     private GameplayClient client;
+    private boolean black = false;
+    private boolean white = false;
+    private boolean observer = false;
     //private static Random rand = new Random();
 
 
@@ -62,7 +65,21 @@ public class GameplayUi {
         client = new GameplayClient(server, serverUrl, this);
     }
     public void run(PreLoginClient client, String joinType) {
-        System.out.println(SET_TEXT_COLOR_MAGENTA + "Welcome to your game!");
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.print(ERASE_SCREEN);
+        System.out.println(SET_TEXT_COLOR_MAGENTA + "Welcome to your game!\n\n");
+        ChessGame chessGame = new ChessGame();
+        if(joinType.equals("WHITE") || joinType.equals("OBSERVER")){
+            drawChessBoard(out, chessGame);
+            if (joinType.equals("WHITE")) {
+                white = true;
+            } else {
+                observer = true;
+            }
+        } else if(joinType.equals("BLACK")) {
+            drawReverseChessBoard(out, chessGame);
+            black = true;
+        }
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
@@ -73,8 +90,35 @@ public class GameplayUi {
             try {
                 result = this.client.eval(line, client.authToken);
                 System.out.print(SET_TEXT_COLOR_MAGENTA + result);
+                String newResult = result.replaceAll("%[sd]", "");
                 if(result.equals("Leaving game")) {
                     return;
+                } else if(result.equals("Board successfully redrawn!")) {
+                    if(observer == true || white == true) {
+                        drawChessBoard(out, chessGame);
+                    } else if(black == true) {
+                        drawReverseChessBoard(out, chessGame);
+                    }
+                } else if(newResult.equals("You moved  to . Promotion: ")){
+                    String[] values = result.split("\\s+");
+                    int counter = 1;
+                    String firstPosition = null;
+                    String movePosition = null;
+                    String promotionChoice = null;
+                    for(int i = 0; i < values.length; i++) {
+                        if(counter == 3) {
+                            firstPosition = values[i];
+                        } else if(counter == 5) {
+                            movePosition = values[i];
+                        } else if(counter == 7) {
+                            promotionChoice = values[i];
+                        }
+                    }
+                    if (black == true) {
+
+                    } else {
+
+                    }
                 }
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -165,6 +209,8 @@ public class GameplayUi {
             setBlack(out);
             out.println();
         }
+        drawReversedHeaders(out);
+        out.print('\n');
     }
 
     private static void drawReverseChessBoard(PrintStream out, ChessGame chessGame) {
@@ -217,6 +263,8 @@ public class GameplayUi {
             setBlack(out);
             out.println();
         }
+        drawHeaders(out);
+        out.print('\n');
     }
 
 
