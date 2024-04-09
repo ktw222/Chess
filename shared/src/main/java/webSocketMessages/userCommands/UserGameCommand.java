@@ -13,6 +13,15 @@ public class UserGameCommand {
     public UserGameCommand(String authToken) {
         this.authToken = authToken;
     }
+    public  UserGameCommand(String authToken, String teamColor, Integer gameID) { //added by me
+        this.authToken = authToken;
+        this.teamColor = teamColor;
+        this.gameID = gameID;
+    }
+
+    public int getGameID() {
+        return gameID;
+    }
 
     public enum CommandType {
         JOIN_PLAYER,
@@ -26,6 +35,11 @@ public class UserGameCommand {
 
     private final String authToken;
 
+
+    private String teamColor; //added by me
+    private int gameID;//added by me
+    //game id and team color
+    public String getTeamColor() { return teamColor; }
     public String getAuthString() {
         return authToken;
     }
