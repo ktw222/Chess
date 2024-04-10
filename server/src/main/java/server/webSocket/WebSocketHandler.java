@@ -18,10 +18,14 @@ import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 @WebSocket
 public class WebSocketHandler {
+    //how to broadcast just to my game
+    //resign
+    //valid moves array contains nothing
 
     private final ConnectionManager connections = new ConnectionManager();
     private ChessGame game;
@@ -113,13 +117,27 @@ public class WebSocketHandler {
         connections.broadcast(username, notification);
     }
     private void resignGame(Session session, String username, UserGameCommand command) throws IOException, DataAccessException {
-        var message = String.format("GAME OVER. %s resigned", username);
         GameData gameData = checkGameID(session, command.getGameID());
         ChessGame game = gameData.game();
-        game.setTeamTurn(null);
+        if (!username.equals(gameData.whiteUsername()) && !username.equals(gameData.blackUsername())) {
+            var errorMessage = String.format("Error: cannot resign as observer");
+            var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+            error.setErrorMessage(errorMessage);
+            session.getRemote().sendString(new Gson().toJson(error));
+            return;
+        }
+        if(game.getTeamTurn() == null) {
+            var errorMessage = String.format("Error: Game Over. No further actions can be taken");
+            var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+            error.setErrorMessage(errorMessage);
+            session.getRemote().sendString(new Gson().toJson(error));
+            return;
+        }
+        var message = String.format("GAME OVER. %s resigned", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.setMessage(message);
         connections.broadcast(username, notification);
+        game.setTeamTurn(null);
     }
 
     public void playerMakeMove(Session session, String username, UserGameCommand command) throws DataAccessException {
@@ -127,7 +145,8 @@ public class WebSocketHandler {
             GameData gameData = checkGameID(session, command.getGameID());
             ChessGame game = gameData.game();
             ChessGame.TeamColor teamTurn = game.getTeamTurn();
-            if(teamTurn == null) {
+            if(teamTurn == null || game.isInCheckmate(ChessGame.TeamColor.WHITE) || game.isInCheckmate(ChessGame.TeamColor.BLACK) ||
+                    game.isInStalemate(ChessGame.TeamColor.BLACK) || game.isInStalemate(ChessGame.TeamColor.WHITE)) {
                 var errorMessage = String.format("Error: Game Over no moves can be made");
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
                 error.setErrorMessage(errorMessage);
@@ -147,6 +166,7 @@ public class WebSocketHandler {
                 return;
             }
             ChessMove move = command.getChessMove();
+            var validMoves = game.validMoves(move.getStartPosition());
             if(!game.validMoves(move.getStartPosition()).contains(move)){
                 var errorMessage = String.format("Error: Invalid move");
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
