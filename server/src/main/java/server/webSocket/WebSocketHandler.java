@@ -30,7 +30,7 @@ public class WebSocketHandler {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
             case JOIN_PLAYER -> joinPlayer(session,getUsername(command.getAuthString()), command);
-            case JOIN_OBSERVER -> joinObserver(getUsername(command.getAuthString()));
+            case JOIN_OBSERVER -> joinObserver(session, getUsername(command.getAuthString()), command);
             case LEAVE -> leaveGame(getUsername(command.getAuthString()));
             case RESIGN -> resignGame(command.getAuthString());
             case MAKE_MOVE -> playerMakeMove(getUsername(command.getAuthString()));
@@ -57,11 +57,20 @@ public class WebSocketHandler {
             throw new DataAccessException(ex.getMessage());
         }
     }
-    public void joinObserver(String username) throws IOException, DataAccessException {
+    public void joinObserver(Session session, String username, UserGameCommand reqJoinGame) throws IOException, DataAccessException {
         try {
-            //connections.add(username, session);
+            GameData gameData = checkGameID(reqJoinGame.getGameID());
+            ChessGame game = gameData.game();
+            //ServerMessage.
+            connections.add(username, session);
+            var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
+            loadGame.setGame(game);
             var message = String.format("%s has joined as an observer", username);
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION); // set message of notification
+            notification.setMessage(message);
+            //send message through client
+            //session.getRemote.sendText(String json version of msg)
+            session.getRemote().sendString(new Gson().toJson(loadGame));
             connections.broadcast(username, notification);
         } catch (Exception ex) {
             throw new DataAccessException(ex.getMessage());
@@ -72,6 +81,7 @@ public class WebSocketHandler {
         connections.remove(username);
         var message = String.format("%s left the game", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        //session.getRemote().sendString(new Gson().toJson(loadGame));
         connections.broadcast(username, notification);
     }
     private void resignGame(String username) throws IOException {
@@ -92,7 +102,6 @@ public class WebSocketHandler {
     private GameData checkGameID(int gameID) throws DataAccessException {
         DatabaseGameDAO gameDAO = new DatabaseGameDAO();
         return gameDAO.getGame(gameID);
-
     }
 
     private String getUsername(String authtoken) throws DataAccessException {
