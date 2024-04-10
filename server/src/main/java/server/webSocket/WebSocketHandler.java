@@ -136,7 +136,7 @@ public class WebSocketHandler {
         var message = String.format("GAME OVER. %s resigned", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.setMessage(message);
-        connections.broadcast(username, command.getGameID(), notification);
+        connections.broadcast("", command.getGameID(), notification);
         game.setTeamTurn(null);
     }
 

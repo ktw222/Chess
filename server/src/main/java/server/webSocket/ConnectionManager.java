@@ -25,7 +25,9 @@ public class ConnectionManager {
         for (var connection : connections.values()) {
             if (connection.session.isOpen()) {
                 if (!connection.visitorName.equals(excludeVisitorName) && connection.gameID.equals(gameID)) {
+                    System.out.println("before connection" + excludeVisitorName + gameID);
                     connection.send(new Gson().toJson(notification));
+                    System.out.println("after connection" + excludeVisitorName + gameID);
                 }
             } else {
                 removeList.add(connection);
