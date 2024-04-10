@@ -177,6 +177,7 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor) == true && isInStalemate(teamColor) == true) {
+            teamTurn = null;
             return true;
         }
         else {
@@ -201,6 +202,7 @@ public class ChessGame {
                     if(chessBoard.getPiece(currPosition).getTeamColor() == teamColor) {
                         Collection<ChessMove> validMoveList = validMoves(currPosition);
                         if(validMoveList.isEmpty()){
+                            teamTurn = null;
                             return true;
                         }
                     }

@@ -15,11 +15,14 @@ public class PostLoginClient {
     private final String serverUrl;
     private String authToken;
     private HashMap<Integer, Integer> gameList = new HashMap<>();
+    private final NotificationHandler notificationHandler;
+    private WebSocketFacade ws;
 
-    public PostLoginClient(ServerFacade server, String serverUrl, PostLoginUi postLoginUi) {
+    public PostLoginClient(ServerFacade server, String serverUrl, PostLoginUi postLoginUi, NotificationHandler notificationHandler) {
         this.server = server;
         this.serverUrl = serverUrl;
 
+        this.notificationHandler = notificationHandler;
     }
 
     public String eval(String input, String authToken) {
@@ -49,12 +52,18 @@ public class PostLoginClient {
                 playerColor = params[1];
                 playerColor = playerColor.toUpperCase();
             }
+            ws = new WebSocketFacade(serverUrl, notificationHandler);
             server.joinGame(new ReqJoinGame(gameList.get(gameID), playerColor), authToken);
-            if(playerColor.equals(chess.ChessGame.TeamColor.WHITE)) {
-                return String.format("You successfully joined your game as white player!\n");
-            } else if(playerColor.equals(ChessGame.TeamColor.BLACK)) {
-                return String.format("You successfully joined your game as black player!\n");
+            if(playerColor!= null) {
+                if(playerColor.equals("WHITE")) {
+                    ws.joinPlayer(authToken, ChessGame.TeamColor.WHITE, gameID);
+                    return String.format("You successfully joined your game as white player!\n");
+                } else if(playerColor.equals("BLACK")) {
+                    ws.joinPlayer(authToken, ChessGame.TeamColor.BLACK, gameID);
+                    return String.format("You successfully joined your game as black player!\n");
+                }
             } else {
+                ws.joinObserver(authToken, null, gameID);
                 return String.format("You successfully joined your game as observer!\n");
             }
 

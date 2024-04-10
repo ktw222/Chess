@@ -1,23 +1,20 @@
 package ui;
 
-import Client.PostLoginClient;
-import Client.PreLoginClient;
+import Client.*;
+import webSocketMessages.serverMessages.ServerMessage;
 
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 
-import Client.ResponseException;
-import Client.ServerFacade;
-
-public class PostLoginUi {
+public class PostLoginUi implements NotificationHandler {
     private PostLoginClient client;
     private String authToken;
 
     private GameplayUi gameplayUi;
     public PostLoginUi(ServerFacade server,String serverUrl) {
-        client = new PostLoginClient(server, serverUrl, this);
+        client = new PostLoginClient(server, serverUrl, this, this);
         gameplayUi = new GameplayUi(server, serverUrl);
     }
 
@@ -59,4 +56,9 @@ public class PostLoginUi {
         System.out.print("\n" + RESET + ">>> " + SET_TEXT_COLOR_WHITE);
     }
 
+    @Override
+    public void notify(ServerMessage notification) {
+        System.out.println(SET_TEXT_COLOR_RED + notification);
+        printPrompt();
+    }
 }

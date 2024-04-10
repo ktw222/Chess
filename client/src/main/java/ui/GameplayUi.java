@@ -70,14 +70,14 @@ public class GameplayUi {
         System.out.println(SET_TEXT_COLOR_MAGENTA + "Welcome to your game!\n\n");
         ChessGame chessGame = new ChessGame();
         if(joinType.equals("WHITE") || joinType.equals("OBSERVER")){
-            drawChessBoard(out, chessGame);
+            drawReverseChessBoard(out, chessGame, false);
             if (joinType.equals("WHITE")) {
                 white = true;
             } else {
                 observer = true;
             }
         } else if(joinType.equals("BLACK")) {
-            drawReverseChessBoard(out, chessGame);
+            drawChessBoard(out, chessGame, false);
             black = true;
         }
 
@@ -95,9 +95,9 @@ public class GameplayUi {
                     return;
                 } else if(result.equals("Board successfully redrawn!")) {
                     if(observer == true || white == true) {
-                        drawChessBoard(out, chessGame);
+                        drawChessBoard(out, chessGame, false);
                     } else if(black == true) {
-                        drawReverseChessBoard(out, chessGame);
+                        drawReverseChessBoard(out, chessGame, false);
                     }
                 } else if(newResult.equals("You moved  to . Promotion: ")){
                     String[] values = result.split("\\s+");
@@ -114,11 +114,11 @@ public class GameplayUi {
                             promotionChoice = values[i];
                         }
                     }
-                    if (black == true) {
-
-                    } else {
-
-                    }
+//                    if (black == true) {
+//
+//                    } else {
+//
+//                    }
                 }
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -138,28 +138,8 @@ public class GameplayUi {
     }
 
 
-    public static void main() { //String[] args
-        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
-        out.print(ERASE_SCREEN);
-
-        ChessGame chessGame = new ChessGame();
-
-        drawChessBoard(out, chessGame);
-        drawReversedHeaders(out);
-
-        out.print('\n');
-
-        drawReverseChessBoard(out, chessGame);
-        drawHeaders(out);
-
-
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_WHITE);
-    }
-
-
-    private static void drawChessBoard(PrintStream out, ChessGame chessGame) {
+    private static void drawChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves) {
         ChessBoard newChessBoard = new ChessBoard();
         if (chessGame.getBoard() == null) {
             chessGame.setBoard(newChessBoard);
@@ -213,7 +193,7 @@ public class GameplayUi {
         out.print('\n');
     }
 
-    private static void drawReverseChessBoard(PrintStream out, ChessGame chessGame) {
+    private static void drawReverseChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves) {
         ChessBoard newChessBoard = new ChessBoard();
         if (chessGame.getBoard() == null) {
             chessGame.setBoard(newChessBoard);

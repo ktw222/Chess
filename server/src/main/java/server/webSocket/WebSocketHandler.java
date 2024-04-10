@@ -26,7 +26,7 @@ public class WebSocketHandler {
     //how to broadcast just to my game
     //resign
     //valid moves array contains nothing
-
+    //keep track of players and observers in specific game //in connection manager
     private final ConnectionManager connections = new ConnectionManager();
     private ChessGame game;
 
@@ -38,7 +38,7 @@ public class WebSocketHandler {
         switch (command.getCommandType()) {
             case JOIN_PLAYER -> joinPlayer(session,getUsername(session, command.getAuthString()), command);
             case JOIN_OBSERVER -> joinObserver(session, getUsername(session, command.getAuthString()), command);
-            case LEAVE -> leaveGame(getUsername(session, command.getAuthString()));
+            case LEAVE -> leaveGame(getUsername(session, command.getAuthString()), command);
             case RESIGN -> resignGame(session, getUsername(session, command.getAuthString()), command);
             case MAKE_MOVE -> playerMakeMove(session, getUsername(session, command.getAuthString()), command);
         }
@@ -75,7 +75,7 @@ public class WebSocketHandler {
                     }
                 }
             }
-            connections.add(username, session);
+            connections.add(username, session, reqJoinGame.getGameID());
             var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
             loadGame.setGame(game);
             var message = String.format("%s has joined as %s player", username, reqJoinGame.getPlayerColor());
@@ -84,7 +84,7 @@ public class WebSocketHandler {
             //send message through client
             //session.getRemote.sendText(String json version of msg)
             session.getRemote().sendString(new Gson().toJson(loadGame));
-            connections.broadcast(username, notification);
+            connections.broadcast(username, reqJoinGame.getGameID(), notification);
         } catch (Exception ex) {
             throw new DataAccessException(ex.getMessage());
         }
@@ -94,7 +94,7 @@ public class WebSocketHandler {
             GameData gameData = checkGameID(session, reqJoinGame.getGameID());
             ChessGame game = gameData.game();
             //ServerMessage.
-            connections.add(username, session);
+            connections.add(username, session, reqJoinGame.getGameID());
             var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
             loadGame.setGame(game);
             var message = String.format("%s has joined as an observer", username);
@@ -103,18 +103,18 @@ public class WebSocketHandler {
             //send message through client
             //session.getRemote.sendText(String json version of msg)
             session.getRemote().sendString(new Gson().toJson(loadGame));
-            connections.broadcast(username, notification);
+            connections.broadcast(username,reqJoinGame.getGameID(), notification);
         } catch (Exception ex) {
             throw new DataAccessException(ex.getMessage());
         }
     }
 
-    private void leaveGame(String username) throws IOException {
+    private void leaveGame(String username, UserGameCommand command) throws IOException {
         connections.remove(username);
         var message = String.format("%s left the game", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.setMessage(message);
-        connections.broadcast(username, notification);
+        connections.broadcast(username, command.getGameID(), notification);
     }
     private void resignGame(Session session, String username, UserGameCommand command) throws IOException, DataAccessException {
         GameData gameData = checkGameID(session, command.getGameID());
@@ -136,7 +136,7 @@ public class WebSocketHandler {
         var message = String.format("GAME OVER. %s resigned", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.setMessage(message);
-        connections.broadcast(username, notification);
+        connections.broadcast(username, command.getGameID(), notification);
         game.setTeamTurn(null);
     }
 
@@ -145,8 +145,10 @@ public class WebSocketHandler {
             GameData gameData = checkGameID(session, command.getGameID());
             ChessGame game = gameData.game();
             ChessGame.TeamColor teamTurn = game.getTeamTurn();
-            if(teamTurn == null || game.isInCheckmate(ChessGame.TeamColor.WHITE) || game.isInCheckmate(ChessGame.TeamColor.BLACK) ||
-                    game.isInStalemate(ChessGame.TeamColor.BLACK) || game.isInStalemate(ChessGame.TeamColor.WHITE)) {
+            if(game.isInCheckmate(teamTurn)) {
+                teamTurn = null;
+            }
+            if(teamTurn == null) {
                 var errorMessage = String.format("Error: Game Over no moves can be made");
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
                 error.setErrorMessage(errorMessage);
@@ -165,6 +167,7 @@ public class WebSocketHandler {
                 session.getRemote().sendString(new Gson().toJson(error));
                 return;
             }
+            //board
             ChessMove move = command.getChessMove();
             var validMoves = game.validMoves(move.getStartPosition());
             if(!game.validMoves(move.getStartPosition()).contains(move)){
@@ -183,8 +186,8 @@ public class WebSocketHandler {
                 notification.setMessage(message);
 
                 session.getRemote().sendString(new Gson().toJson(loadGame));
-                connections.broadcast(username, notification);
-                connections.broadcast(username, loadGame);
+                connections.broadcast(username, command.getGameID(), notification);
+                connections.broadcast(username, command.getGameID(), loadGame);
             } else {
                 var errorMessage = String.format("Error: cannot make move on other players turn");
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
