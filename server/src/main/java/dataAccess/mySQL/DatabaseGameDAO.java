@@ -18,6 +18,7 @@ public class DatabaseGameDAO extends DatabaseDAO implements GameDAO {
     }
     public int createGame(String gameName) throws DataAccessException{
         ChessGame chessGame = new ChessGame();
+        chessGame.setTeamTurn(ChessGame.TeamColor.WHITE);
         Gson gson = new Gson();
         String stringGame = gson.toJson(chessGame);
         var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";

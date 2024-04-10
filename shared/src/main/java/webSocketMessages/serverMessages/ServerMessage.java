@@ -25,6 +25,10 @@ public class ServerMessage {
         this.message = message;
     }
 
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
 
     public enum ServerMessageType {
         LOAD_GAME,
@@ -43,7 +47,7 @@ public class ServerMessage {
     //game
     private ChessGame game;
     private String message;
-
+    private String errorMessage;
     @Override
     public boolean equals(Object o) {
         if (this == o)
