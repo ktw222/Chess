@@ -81,12 +81,13 @@ public class WebSocketHandler {
         connections.remove(username);
         var message = String.format("%s left the game", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-        //session.getRemote().sendString(new Gson().toJson(loadGame));
+        notification.setMessage(message);
         connections.broadcast(username, notification);
     }
     private void resignGame(String username) throws IOException {
         var message = String.format("GAME OVER. %s resigned", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        notification.setMessage(message);
         connections.broadcast(username, notification);
     }
 
@@ -94,6 +95,7 @@ public class WebSocketHandler {
         try {
             var message = String.format("%s moved", username);
             var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            notification.setMessage(message);
             connections.broadcast(username, notification);
         } catch (Exception ex) {
             throw new DataAccessException(ex.getMessage());
