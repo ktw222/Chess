@@ -33,7 +33,7 @@ public class WebSocketHandler {
             case JOIN_OBSERVER -> joinObserver(session, getUsername(command.getAuthString()), command);
             case LEAVE -> leaveGame(getUsername(command.getAuthString()));
             case RESIGN -> resignGame(command.getAuthString());
-            case MAKE_MOVE -> playerMakeMove(getUsername(command.getAuthString()));
+            case MAKE_MOVE -> playerMakeMove(session, getUsername(command.getAuthString()), command);
         }
     }
 
@@ -91,12 +91,19 @@ public class WebSocketHandler {
         connections.broadcast(username, notification);
     }
 
-    public void playerMakeMove(String username) throws DataAccessException {
+    public void playerMakeMove(Session session, String username, UserGameCommand command) throws DataAccessException {
         try {
+            GameData gameData = checkGameID(command.getGameID());
+            ChessGame game = gameData.game();
+            var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
+            loadGame.setGame(game);
             var message = String.format("%s moved", username);
             var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
             notification.setMessage(message);
+
+            session.getRemote().sendString(new Gson().toJson(loadGame));
             connections.broadcast(username, notification);
+            connections.broadcast(username, loadGame);
         } catch (Exception ex) {
             throw new DataAccessException(ex.getMessage());
         }
