@@ -44,13 +44,28 @@ public class WebSocketHandler {
         try {
             GameData gameData = checkGameID(session, reqJoinGame.getGameID());
             ChessGame game = gameData.game();
+            if(gameData.whiteUsername() == null || gameData.blackUsername() == null) {
+                var errorMessage = String.format("Error: game is empty");
+                var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+                error.setErrorMessage(errorMessage);
+                session.getRemote().sendString(new Gson().toJson(error));
+                throw new DataAccessException("Error: Black username not black");
+            }
             if(reqJoinGame.getPlayerColor() != null) {
                 if (reqJoinGame.getPlayerColor().equals(ChessGame.TeamColor.BLACK)) {
                     if (!gameData.blackUsername().equals(username)) {
+                        var errorMessage = String.format("Error: Black username not black");
+                        var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+                        error.setErrorMessage(errorMessage);
+                        session.getRemote().sendString(new Gson().toJson(error));
                         throw new DataAccessException("Error: Black username not black");
                     }
                 } else if (reqJoinGame.getPlayerColor().equals(ChessGame.TeamColor.WHITE)) {
                     if (!gameData.whiteUsername().equals(username)) {
+                        var errorMessage = String.format("Error: White username not white");
+                        var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+                        error.setErrorMessage(errorMessage);
+                        session.getRemote().sendString(new Gson().toJson(error));
                         throw new DataAccessException("Error: White username not white");
                     }
                 }
