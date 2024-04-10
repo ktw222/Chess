@@ -1,5 +1,6 @@
 package dataAccess.mySQL;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
@@ -18,6 +19,7 @@ public class DatabaseGameDAO extends DatabaseDAO implements GameDAO {
     }
     public int createGame(String gameName) throws DataAccessException{
         ChessGame chessGame = new ChessGame();
+        chessGame.setBoard(new ChessBoard());
         chessGame.setTeamTurn(ChessGame.TeamColor.WHITE);
         Gson gson = new Gson();
         String stringGame = gson.toJson(chessGame);

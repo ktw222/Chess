@@ -1,6 +1,7 @@
 package webSocketMessages.userCommands;
 
 import chess.ChessGame;
+import chess.ChessMove;
 
 import java.util.Objects;
 
@@ -40,6 +41,10 @@ public class UserGameCommand {
 
     private ChessGame.TeamColor playerColor; //added by me
     private int gameID;//added by me
+    private ChessMove move;
+    public ChessMove getChessMove() {
+        return move;
+    }
     //game id and team color
     public ChessGame.TeamColor getPlayerColor() { return playerColor; }
     public String getAuthString() {

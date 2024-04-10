@@ -1,6 +1,7 @@
 package server.webSocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 //import dataaccess.DataAccess;
 //import exception.ResponseException;
@@ -140,6 +141,14 @@ public class WebSocketHandler {
                 playerColor = ChessGame.TeamColor.WHITE;
             } else {
                 var errorMessage = String.format("Error: cannot make move as observer");
+                var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+                error.setErrorMessage(errorMessage);
+                session.getRemote().sendString(new Gson().toJson(error));
+                return;
+            }
+            ChessMove move = command.getChessMove();
+            if(!game.validMoves(move.getStartPosition()).contains(move)){
+                var errorMessage = String.format("Error: Invalid move");
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
                 error.setErrorMessage(errorMessage);
                 session.getRemote().sendString(new Gson().toJson(error));
