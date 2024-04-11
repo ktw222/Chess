@@ -1,14 +1,12 @@
 package ui;
 
 import Client.*;
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -30,6 +28,8 @@ public class GameplayUi {
     private boolean black = false;
     private boolean white = false;
     private boolean observer = false;
+    static String row;
+    static String col;
     //private static Random rand = new Random();
 
 
@@ -61,7 +61,7 @@ public class GameplayUi {
     public GameplayUi(ServerFacade server, String serverUrl) {
         client = new GameplayClient(server, serverUrl, this);
     }
-    public void run(PreLoginClient client, String joinType, Integer gameID) {
+    public void run(PreLoginClient client, String joinType, Integer gameID, WebSocketFacade ws) throws ResponseException {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
         System.out.println(SET_TEXT_COLOR_MAGENTA + "Welcome to your game!\n\n");
@@ -88,16 +88,34 @@ public class GameplayUi {
             String line = scanner.nextLine();
 
             try {
-                result = this.client.eval(line, client.authToken, gameID, joinColor);
+                result = this.client.eval(line, client.authToken, gameID, joinColor, ws, out);
                 System.out.print(SET_TEXT_COLOR_MAGENTA + result);
-                String newResult = result.replaceAll("%[sd]", "");
-                if(result.equals("Leaving game")) {
+                String newResult = result.replaceAll("\\s*\\b[[a-h]^[1-8]]\\b\\s*", "");
+                if(result.equals("Left game\n")) {
                     return;
-                } else if(result.equals("Board successfully redrawn!")) {
+                } else if(result.equals("Board successfully redrawn!\n")) {
                     if(observer == true || white == true) {
                         drawChessBoard(out, chessGame, false);
                     } else if(black == true) {
                         drawReverseChessBoard(out, chessGame, false);
+                    }
+                }else if(newResult.equals("Legal moves for piece:")) {
+                    String[] values = result.split("\\s+");
+                    int counter = 1;
+                    //String row;
+                    //String col;
+                    for(int i = 0; i < values.length; i++) {
+                        if(counter == 5) {
+                            row = values[i];
+                        } else if(counter == 6) {
+                            col = values[i];
+                        }
+                        counter++;
+                    }
+                    if(observer == true || white == true) {
+                        drawReverseChessBoard(out, chessGame, true);
+                    } else if(black == true) {
+                        drawChessBoard(out, chessGame, true);
                     }
                 } else if(newResult.equals("You moved  to . Promotion: ")){
                     String[] values = result.split("\\s+");
@@ -139,7 +157,7 @@ public class GameplayUi {
 
 
 
-    private static void drawChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves) {
+    private void drawChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves) throws ResponseException {
         ChessBoard newChessBoard = new ChessBoard();
         if (chessGame.getBoard() == null) {
             chessGame.setBoard(newChessBoard);
@@ -147,6 +165,16 @@ public class GameplayUi {
         }
         ChessBoard chessBoard = chessGame.getBoard();
         drawReversedHeaders(out);
+        int intRow = 0;
+        int intCol = 0;
+        boolean highlight = false;
+        Collection<ChessMove> validMoves = null;
+        ChessPosition position = new ChessPosition(intRow, intCol);
+        if(highlightMoves == true) {
+            intRow = Integer.parseInt(row);
+            intCol = charToNumber(col);
+            validMoves = chessBoard.getPiece(position).pieceMoves(chessBoard, position);
+        }
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; row++) {
             out.print(SET_BG_COLOR_BLACK);
             out.print(SET_TEXT_COLOR_MAGENTA);
@@ -154,31 +182,78 @@ public class GameplayUi {
             out.print(" "+ row2Print +" ");
             for (int col = BOARD_SIZE_IN_SQUARES - 1; col >= 0; col--) {
                 ChessPosition currPosition = new ChessPosition(row + 1, col + 1);
+                if(highlightMoves == true) {
+                    if (validMoves.contains(currPosition) || position == currPosition) {
+                        highlight = true;
+                    }
+                }
                 if ((row + col) % 2 == 0) {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
-                            setWhitePieceDG(out);
+                            if(highlight == true) {
+                                if(position == currPosition) {
+                                    setWhitePieceHighlight(out);
+                                } else {
+                                    setWhitePieceDGreen(out);
+                                }
+                            } else {
+                                setWhitePieceDG(out);
+                            }
                         } else {
-                            setBlackPieceDG(out);
+                            if(highlight == true) {
+                                if (position == currPosition) {
+                                    setBlackPieceHighlight(out);
+                                } else {
+                                    setBlackPieceDGreen(out);
+                                }
+                            } else {
+                                setBlackPieceDG(out);
+                            }
                         }
                         printPlayer(out, chessBoard, currPosition);
                     } else {
-                        setDarkGray(out);
+                        if(highlight == true) {
+                            setDarkGreen(out);
+                        } else {
+                            setDarkGray(out);
+                        }
                         out.print(EMPTY);
+                        highlight = false;
                     }
 
                     setBlack(out);
                 } else {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
-                            setWhitePieceLG(out);
+                            if(highlight == true) {
+                                if (position == currPosition) {
+                                    setWhitePieceHighlight(out);
+                                } else {
+                                    setWhitePieceGreen(out);
+                                }
+                            } else {
+                                setWhitePieceLG(out);
+                            }
                         } else {
-                            setBlackPieceLG(out);
+                            if(highlight == true) {
+                                if (position == currPosition) {
+                                    setBlackPieceHighlight(out);
+                                } else {
+                                    setBlackPieceDGreen(out);
+                                }
+                            } else {
+                                setBlackPieceLG(out);
+                            }
                         }
                         printPlayer(out, chessBoard, currPosition);
                     } else {
-                        setLightGray(out);
+                        if(highlight == true) {
+                            setLightGreen(out);
+                        } else {
+                            setLightGray(out);
+                        }
                         out.print(EMPTY);
+                        highlight = false;
                     }
                     setBlack(out);
                 }
@@ -193,7 +268,7 @@ public class GameplayUi {
         out.print('\n');
     }
 
-    private static void drawReverseChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves) {
+    private static void drawReverseChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves) throws ResponseException {
         ChessBoard newChessBoard = new ChessBoard();
         if (chessGame.getBoard() == null) {
             chessGame.setBoard(newChessBoard);
@@ -201,6 +276,17 @@ public class GameplayUi {
         }
         ChessBoard chessBoard = chessGame.getBoard();
         drawHeaders(out);
+        int intRow = 0;
+        int intCol = 0;
+        boolean highlight = false;
+        Collection<ChessMove> validMoves = null;
+        ChessPosition position = new ChessPosition(intRow, intCol);
+        if(highlightMoves == true) {
+            intRow = Integer.parseInt(row);
+            intCol = charToNumber(col);
+            position = new ChessPosition(intRow, intCol);
+            validMoves = chessBoard.getPiece(position).pieceMoves(chessBoard, position);
+        }
         for (int row = BOARD_SIZE_IN_SQUARES - 1; row >= 0; row--) { // Changed loop condition here
             out.print(SET_BG_COLOR_BLACK);
             out.print(SET_TEXT_COLOR_MAGENTA);
@@ -208,33 +294,88 @@ public class GameplayUi {
             out.print(" "+ row2print +" ");
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; col++) {
                 ChessPosition currPosition = new ChessPosition(row + 1, col + 1);
+                if(highlightMoves == true) {
+                    for (ChessMove movePos : validMoves) {
+                        if(movePos.getEndPosition().equals(currPosition)) {
+                            highlight = true;
+                        }
+                    }
+                    if (position.equals(currPosition)) {
+                        highlight = true;
+                    }
+                }
                 if ((row + col) % 2 == 0) {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
-                            setWhitePieceDG(out);
+                            if(highlight == true) {
+                                if(position.equals(currPosition)) {
+                                    setWhitePieceHighlight(out);
+                                } else {
+                                    setWhitePieceDGreen(out);
+                                }
+                            } else {
+                                setWhitePieceDG(out);
+                            }
                         } else {
-                            setBlackPieceDG(out);
+                            if(highlight == true) {
+                                if (position.equals(currPosition)) {
+                                    setBlackPieceHighlight(out);
+                                } else {
+                                    setBlackPieceDGreen(out);
+                                }
+                            } else {
+                                setBlackPieceDG(out);
+                            }
                         }
                         printPlayer(out, chessBoard, currPosition);
                     } else {
-                        setDarkGray(out);
+                        if(highlight == true) {
+                            setDarkGreen(out);
+                            highlight = false;
+                        } else {
+                            setDarkGray(out);
+                        }
                         out.print(EMPTY);
+                        highlight = false;
                     }
 
                 } else {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
-                            setWhitePieceLG(out);
+                            if(highlight == true) {
+                                if (position.equals(currPosition)) {
+                                    setWhitePieceHighlight(out);
+                                } else {
+                                    setWhitePieceGreen(out);
+                                }
+                            } else {
+                                setWhitePieceLG(out);
+                            }
                         } else {
-                            setBlackPieceLG(out);
+                            if(highlight == true) {
+                                if (position.equals(currPosition)) {
+                                    setBlackPieceHighlight(out);
+                                } else {
+                                    setBlackPieceDGreen(out);
+                                }
+                            } else {
+                                setBlackPieceLG(out);
+                            }
                         }
                         printPlayer(out, chessBoard, currPosition);
                     } else {
-                        setLightGray(out);
+                        if(highlight == true) {
+                            setLightGreen(out);
+                            highlight = false;
+                        } else {
+                            setLightGray(out);
+                        }
                         out.print(EMPTY);
+                        highlight = false;
                     }
                     out.print(SET_BG_COLOR_BLACK);
                     out.print(SET_TEXT_COLOR_MAGENTA);
+                    highlight = false;
                 }
             }
             out.print(SET_BG_COLOR_BLACK);
@@ -275,10 +416,34 @@ public class GameplayUi {
         out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_WHITE);
     }
+    private static void setWhitePieceGreen(PrintStream out) {
+        out.print(SET_BG_COLOR_GREEN);
+        out.print(SET_TEXT_COLOR_WHITE);
+    }
+    private static void setWhitePieceDGreen(PrintStream out) {
+        out.print(SET_BG_COLOR_DARK_GREEN);
+        out.print(SET_TEXT_COLOR_WHITE);
+    }
 
     private static void setBlackPieceLG(PrintStream out) {
         out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_BLACK);
+    }
+    private static void setBlackPieceGreen(PrintStream out) {
+        out.print(SET_BG_COLOR_GREEN);
+        out.print(SET_TEXT_COLOR_BLACK);
+    }
+    private static void setBlackPieceDGreen(PrintStream out) {
+        out.print(SET_BG_COLOR_DARK_GREEN);
+        out.print(SET_TEXT_COLOR_BLACK);
+    }
+    private static void setBlackPieceHighlight(PrintStream out) {
+        out.print(SET_BG_COLOR_YELLOW);
+        out.print(SET_TEXT_COLOR_BLACK);
+    }
+    private static void setWhitePieceHighlight(PrintStream out) {
+        out.print(SET_BG_COLOR_YELLOW);
+        out.print(SET_TEXT_COLOR_WHITE);
     }
 
     private static void setBlackPieceDG(PrintStream out) {
@@ -306,9 +471,46 @@ public class GameplayUi {
         out.print(SET_BG_COLOR_DARK_GREY);
         out.print(SET_TEXT_COLOR_DARK_GREY);
     }
+    private static void setDarkGreen(PrintStream out){
+        out.print(SET_BG_COLOR_DARK_GREEN);
+        //out.print();
+    }
+    private static void setLightGreen(PrintStream out){
+        out.print(SET_BG_COLOR_GREEN);
+        out.print(SET_TEXT_COLOR_GREEN);
+        //out.print();
+    }
 
     private static void setLightGray(PrintStream out) {
         out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_LIGHT_GREY);
     }
+    public static int charToNumber(String letter) throws ResponseException{
+        // Convert lowercase letters to numbers (a=1, b=2, ..., z=26)
+        try {
+            switch (letter) {
+                case "a":
+                    return 1;
+                case "b":
+                    return 2;
+                case "c":
+                    return 3;
+                case "d":
+                    return 4;
+                case "e":
+                    return 5;
+                case "f":
+                    return 6;
+                case "g":
+                    return 7;
+                case "h":
+                    return 8;
+                default:
+                    throw new ResponseException(400, "Col doesn't exist");
+            }
+        } catch (Exception ex) {
+            throw new ResponseException(400, "col does not exist please enter from a-h");
+        }
+    }
 }
+

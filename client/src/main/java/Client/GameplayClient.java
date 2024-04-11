@@ -7,6 +7,7 @@ import reqRes.ReqJoinGame;
 import ui.GameplayUi;
 import ui.PostLoginUi;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -20,18 +21,21 @@ public class GameplayClient {
     private Integer gameID;
     private HashMap<Integer, Integer> gameList = new HashMap<>();
     private WebSocketFacade ws;
-
+    private PrintStream out;
     public GameplayClient(ServerFacade server, String serverUrl, GameplayUi gameplayUi) {
         this.server = server;
         this.serverUrl = serverUrl;
+        //this.ws = new WebSocketFacade()
 
     }
 
-    public String eval(String input, String authToken, Integer gameID, ChessGame.TeamColor playerColor) {
+    public String eval(String input, String authToken, Integer gameID, ChessGame.TeamColor playerColor, WebSocketFacade ws, PrintStream out) {
         try {
             this.authToken = authToken;
             this.gameID = gameID;
             this.playerColor = playerColor;
+            this.ws = ws;
+            this.out = out;
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -53,7 +57,7 @@ public class GameplayClient {
         if (params.length >= 2) {
             String pieceRow = params[0];
             String pieceColumn = params[1];
-            return String.format("Legal moves for piece: %s %s.", pieceRow, pieceColumn);
+            return String.format("Legal moves for piece: %s %s\n", pieceRow, pieceColumn);
         }
         throw new ResponseException(400, "Expected: pieceRow pieceColumn");
     }
@@ -74,7 +78,7 @@ public class GameplayClient {
     }
 
     public String redrawBoard() throws ResponseException {
-        return String.format("Board successfully redrawn!");
+        return String.format("Board successfully redrawn!\n");
     }
 
 
@@ -82,10 +86,11 @@ public class GameplayClient {
     public String leaveGame() throws ResponseException {
         //server.logout(authToken);
         ws.leaveGame(authToken, playerColor, gameID);
-        return String.format("Left game");
+        return String.format("Left game\n");
     }
     public String resign() throws ResponseException {
-        String.format("Resigning will cause you to forfeit the game. Are you sure you wish to resign?");
+        out.println("Resigning will cause you to forfeit the game. Are you sure you wish to resign?");
+        //String.format("Resigning will cause you to forfeit the game. Are you sure you wish to resign?");
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         var tokens = input.toLowerCase().split(" ");
@@ -110,10 +115,11 @@ public class GameplayClient {
 
     public String help() {
         return """
-                    - CreateGame <gameName>
-                    - JoinGame <gameID>
-                    - ListGames <>
-                    - Logout
+                    - PossibleMoves <row col>
+                    - MakeMove <originalRow originalCol moveRow moveCol>
+                    - Resign
+                    - Redraw
+                    - leaveGame
                     - Quit
                     """;
 

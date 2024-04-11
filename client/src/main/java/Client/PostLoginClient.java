@@ -17,7 +17,7 @@ public class PostLoginClient {
     public Integer gameID;
     private HashMap<Integer, Integer> gameList = new HashMap<>();
     private final NotificationHandler notificationHandler;
-    private WebSocketFacade ws;
+    public WebSocketFacade ws;
 
     public PostLoginClient(ServerFacade server, String serverUrl, PostLoginUi postLoginUi, NotificationHandler notificationHandler) {
         this.server = server;
@@ -44,7 +44,7 @@ public class PostLoginClient {
             return ex.getMessage();
         }
 
-    }
+    }//set ws instance in gameplay
     public String joinGame(String... params) throws ResponseException {
         if (params.length >= 1) {
             int gameID = Integer.parseInt(params[0]);
