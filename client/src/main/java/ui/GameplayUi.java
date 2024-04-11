@@ -132,11 +132,6 @@ public class GameplayUi {
                             promotionChoice = values[i];
                         }
                     }
-//                    if (black == true) {
-//
-//                    } else {
-//
-//                    }
                 }
             } catch (Throwable e) {
                 var msg = e.toString();
