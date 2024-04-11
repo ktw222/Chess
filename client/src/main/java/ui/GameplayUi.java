@@ -226,7 +226,7 @@ public class GameplayUi {
                         out.print(EMPTY);
                         highlight = false;
                     }
-
+                    highlight = false;
                     setBlack(out);
                 } else {
                     if (chessBoard.getPiece(currPosition) != null) {
@@ -345,6 +345,7 @@ public class GameplayUi {
                         out.print(EMPTY);
                         highlight = false;
                     }
+                    highlight = false;
 
                 } else {
                     if (chessBoard.getPiece(currPosition) != null) {
