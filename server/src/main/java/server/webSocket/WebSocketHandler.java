@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 //import exception.ResponseException;
 import dataAccess.DataAccessException;
 import dataAccess.mySQL.DatabaseAuthDAO;
+import dataAccess.mySQL.DatabaseDAO;
 import dataAccess.mySQL.DatabaseGameDAO;
 import model.AuthData;
 import model.GameData;
@@ -22,13 +23,17 @@ import java.util.ArrayList;
 
 
 @WebSocket
-public class WebSocketHandler {
+public class WebSocketHandler extends DatabaseDAO{
     //how to broadcast just to my game
     //resign
     //valid moves array contains nothing
     //keep track of players and observers in specific game //in connection manager
     private final ConnectionManager connections = new ConnectionManager();
     private ChessGame game;
+    //private DatabaseDAO updateAccess = new DatabaseDAO();
+
+    public WebSocketHandler() throws DataAccessException {
+    }
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException, DataAccessException {
@@ -126,7 +131,8 @@ public class WebSocketHandler {
             session.getRemote().sendString(new Gson().toJson(error));
             return;
         }
-        if(game.getTeamTurn() == null) {
+        ChessGame.TeamColor teamTurn = game.getTeamTurn();
+        if(game.gameover == true) {
             var errorMessage = String.format("Error: Game Over. No further actions can be taken");
             var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
             error.setErrorMessage(errorMessage);
@@ -137,7 +143,17 @@ public class WebSocketHandler {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.setMessage(message);
         connections.broadcast("", command.getGameID(), notification);
-        game.setTeamTurn(null);
+        //game.setTeamTurn(ChessGame.TeamColor.GAMEOVER);
+        game.gameover = true;
+        String jsonGame = new Gson().toJson(game);
+        try {
+            String statement = "UPDATE games SET whiteUsername = ?, blackUsername = ?, game = ? WHERE gameName = ?";
+            var updateGame = executeUpdate(statement, gameData.whiteUsername(), gameData.blackUsername(), jsonGame, gameData.gameName());
+        } catch (Exception ex) {
+            throw new DataAccessException("the database update did not work");
+        }
+        //executeUpdate()
+
     }
 
     public void playerMakeMove(Session session, String username, UserGameCommand command) throws DataAccessException {
@@ -145,10 +161,9 @@ public class WebSocketHandler {
             GameData gameData = checkGameID(session, command.getGameID());
             ChessGame game = gameData.game();
             ChessGame.TeamColor teamTurn = game.getTeamTurn();
-            if(game.isInCheckmate(teamTurn)) {
-                teamTurn = null;
-            }
-            if(teamTurn == null) {
+            boolean gamover = game.gameover;
+
+            if(game.gameover == true) {
                 var errorMessage = String.format("Error: Game Over no moves can be made");
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
                 error.setErrorMessage(errorMessage);
@@ -179,6 +194,14 @@ public class WebSocketHandler {
             }
             //ChessGame.TeamColor playerColor = command.getPlayerColor();
             if(game.getTeamTurn().equals(playerColor)) {
+                game.makeMove(move);
+                String jsonGame = new Gson().toJson(game);
+                try {
+                    String statement = "UPDATE games SET whiteUsername = ?, blackUsername = ?, game = ? WHERE gameName = ?";
+                    var updateGame = executeUpdate(statement, gameData.whiteUsername(), gameData.blackUsername(), jsonGame, gameData.gameName());
+                } catch (Exception ex) {
+                    throw new DataAccessException("the database update did not work");
+                }
                 var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
                 loadGame.setGame(game);
                 var message = String.format("%s moved", username);
@@ -229,4 +252,5 @@ public class WebSocketHandler {
             throw new DataAccessException("unauthorized access");
         }
     }
+
 }

@@ -40,9 +40,11 @@ public class ChessGame {
     /**
      * Enum identifying the 2 possible teams in a chess game
      */
+    public boolean gameover = false;
     public enum TeamColor {
         WHITE,
-        BLACK
+        BLACK,
+        GAMEOVER
     }
 
     /**
@@ -177,7 +179,8 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor) == true && isInStalemate(teamColor) == true) {
-            teamTurn = null;
+            //setTeamTurn(TeamColor.GAMEOVER);
+            gameover = true;
             return true;
         }
         else {
@@ -202,7 +205,8 @@ public class ChessGame {
                     if(chessBoard.getPiece(currPosition).getTeamColor() == teamColor) {
                         Collection<ChessMove> validMoveList = validMoves(currPosition);
                         if(validMoveList.isEmpty()){
-                            teamTurn = null;
+                            //setTeamTurn(TeamColor.GAMEOVER);
+                            gameover = true;
                             return true;
                         }
                     }
@@ -220,6 +224,7 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         this.chessBoard = board;
+        setTeamTurn(TeamColor.WHITE);
     }
 
     /**
