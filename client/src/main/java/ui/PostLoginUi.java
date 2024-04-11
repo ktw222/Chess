@@ -33,11 +33,11 @@ public class PostLoginUi implements NotificationHandler {
                 if(result.equals("Logout successful")) {
                     return;
                 } else if(result.equals("You successfully joined your game as white player!\n")) {
-                    gameplayUi.run(client, "WHITE");
+                    gameplayUi.run(client, "WHITE", this.client.gameID);
                 } else if(result.equals("You successfully joined your game as black player!\n")) {
-                    gameplayUi.run(client, "BLACK");
+                    gameplayUi.run(client, "BLACK", this.client.gameID);
                 } else if(result.equals("You successfully joined your game as observer!\n")) {
-                    gameplayUi.run(client, "OBSERVER");
+                    gameplayUi.run(client, "OBSERVER", this.client.gameID);
                 }
             } catch (Throwable e) {
                 var msg = e.toString();

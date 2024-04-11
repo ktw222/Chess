@@ -1,5 +1,6 @@
 package Client;
 
+import chess.ChessGame;
 import model.GameData;
 import reqRes.ReqCreateGame;
 import reqRes.ReqJoinGame;
@@ -15,7 +16,10 @@ public class GameplayClient {
     private final ServerFacade server;
     private final String serverUrl;
     private String authToken;
+    ChessGame.TeamColor playerColor;
+    private Integer gameID;
     private HashMap<Integer, Integer> gameList = new HashMap<>();
+    private WebSocketFacade ws;
 
     public GameplayClient(ServerFacade server, String serverUrl, GameplayUi gameplayUi) {
         this.server = server;
@@ -23,9 +27,11 @@ public class GameplayClient {
 
     }
 
-    public String eval(String input, String authToken) {
+    public String eval(String input, String authToken, Integer gameID, ChessGame.TeamColor playerColor) {
         try {
             this.authToken = authToken;
+            this.gameID = gameID;
+            this.playerColor = playerColor;
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -61,6 +67,7 @@ public class GameplayClient {
             if(params.length > 4) {
                 promotionPiece = params[4];
             }
+            ws.makeMove(authToken, playerColor, gameID);
             return String.format("You moved %s%s to %s%s. Promotion: %s", origPieceRow, origPieceColumn, newPieceRow, newPieceColumn, promotionPiece);
         }
         throw new ResponseException(400, "Expected: currPieceRow currPieceCol moveRow moveCol promotionChoice");
@@ -74,7 +81,8 @@ public class GameplayClient {
 
     public String leaveGame() throws ResponseException {
         //server.logout(authToken);
-        return String.format("Leaving game");
+        ws.leaveGame(authToken, playerColor, gameID);
+        return String.format("Left game");
     }
     public String resign() throws ResponseException {
         String.format("Resigning will cause you to forfeit the game. Are you sure you wish to resign?");
@@ -85,7 +93,9 @@ public class GameplayClient {
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
         switch (cmd) {
             case "yes" -> {
-                return String.format("You resigned");
+                String output = String.format("You resigned");
+                ws.resign(authToken, playerColor, gameID);
+                return output;
             }
             case "no" -> {
                 return String.format("You successfully canceled your resignation");

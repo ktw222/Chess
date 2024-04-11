@@ -14,6 +14,7 @@ public class PostLoginClient {
     private final ServerFacade server;
     private final String serverUrl;
     private String authToken;
+    public Integer gameID;
     private HashMap<Integer, Integer> gameList = new HashMap<>();
     private final NotificationHandler notificationHandler;
     private WebSocketFacade ws;
@@ -47,6 +48,7 @@ public class PostLoginClient {
     public String joinGame(String... params) throws ResponseException {
         if (params.length >= 1) {
             int gameID = Integer.parseInt(params[0]);
+            this.gameID = gameID;
             String playerColor = null;
             if(params.length > 1) {
                 playerColor = params[1];

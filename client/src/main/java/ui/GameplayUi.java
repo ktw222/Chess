@@ -1,9 +1,6 @@
 package ui;
 
-import Client.GameplayClient;
-import Client.PostLoginClient;
-import Client.PreLoginClient;
-import Client.ServerFacade;
+import Client.*;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
@@ -64,21 +61,24 @@ public class GameplayUi {
     public GameplayUi(ServerFacade server, String serverUrl) {
         client = new GameplayClient(server, serverUrl, this);
     }
-    public void run(PreLoginClient client, String joinType) {
+    public void run(PreLoginClient client, String joinType, Integer gameID) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
         System.out.println(SET_TEXT_COLOR_MAGENTA + "Welcome to your game!\n\n");
         ChessGame chessGame = new ChessGame();
+        ChessGame.TeamColor joinColor = null;
         if(joinType.equals("WHITE") || joinType.equals("OBSERVER")){
             drawReverseChessBoard(out, chessGame, false);
             if (joinType.equals("WHITE")) {
                 white = true;
+                joinColor = ChessGame.TeamColor.WHITE;
             } else {
                 observer = true;
             }
         } else if(joinType.equals("BLACK")) {
             drawChessBoard(out, chessGame, false);
             black = true;
+            joinColor = ChessGame.TeamColor.BLACK;
         }
 
         Scanner scanner = new Scanner(System.in);
@@ -88,7 +88,7 @@ public class GameplayUi {
             String line = scanner.nextLine();
 
             try {
-                result = this.client.eval(line, client.authToken);
+                result = this.client.eval(line, client.authToken, gameID, joinColor);
                 System.out.print(SET_TEXT_COLOR_MAGENTA + result);
                 String newResult = result.replaceAll("%[sd]", "");
                 if(result.equals("Leaving game")) {
