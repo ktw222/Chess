@@ -95,9 +95,9 @@ public class GameplayUi {
                     return;
                 } else if(result.equals("Board successfully redrawn!\n")) {
                     if(observer == true || white == true) {
-                        drawChessBoard(out, chessGame, false);
-                    } else if(black == true) {
                         drawReverseChessBoard(out, chessGame, false);
+                    } else if(black == true) {
+                        drawChessBoard(out, chessGame, false);
                     }
                 }else if(newResult.equals("Legal moves for piece:")) {
                     String[] values = result.split("\\s+");
@@ -173,6 +173,7 @@ public class GameplayUi {
         if(highlightMoves == true) {
             intRow = Integer.parseInt(row);
             intCol = charToNumber(col);
+            position = new ChessPosition(intRow, intCol);
             validMoves = chessBoard.getPiece(position).pieceMoves(chessBoard, position);
         }
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; row++) {
@@ -183,7 +184,12 @@ public class GameplayUi {
             for (int col = BOARD_SIZE_IN_SQUARES - 1; col >= 0; col--) {
                 ChessPosition currPosition = new ChessPosition(row + 1, col + 1);
                 if(highlightMoves == true) {
-                    if (validMoves.contains(currPosition) || position == currPosition) {
+                    for (ChessMove movePos : validMoves) {
+                        if(movePos.getEndPosition().equals(currPosition)) {
+                            highlight = true;
+                        }
+                    }
+                    if (position.equals(currPosition)) {
                         highlight = true;
                     }
                 }
@@ -191,7 +197,7 @@ public class GameplayUi {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
                             if(highlight == true) {
-                                if(position == currPosition) {
+                                if(position.equals(currPosition)) {
                                     setWhitePieceHighlight(out);
                                 } else {
                                     setWhitePieceDGreen(out);
@@ -201,7 +207,7 @@ public class GameplayUi {
                             }
                         } else {
                             if(highlight == true) {
-                                if (position == currPosition) {
+                                if (position.equals(currPosition)) {
                                     setBlackPieceHighlight(out);
                                 } else {
                                     setBlackPieceDGreen(out);
@@ -226,7 +232,7 @@ public class GameplayUi {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
                             if(highlight == true) {
-                                if (position == currPosition) {
+                                if (position.equals(currPosition)) {
                                     setWhitePieceHighlight(out);
                                 } else {
                                     setWhitePieceGreen(out);
@@ -236,7 +242,7 @@ public class GameplayUi {
                             }
                         } else {
                             if(highlight == true) {
-                                if (position == currPosition) {
+                                if (position.equals(currPosition)) {
                                     setBlackPieceHighlight(out);
                                 } else {
                                     setBlackPieceDGreen(out);
@@ -255,6 +261,7 @@ public class GameplayUi {
                         out.print(EMPTY);
                         highlight = false;
                     }
+                    highlight = false;
                     setBlack(out);
                 }
             }
