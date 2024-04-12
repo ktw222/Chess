@@ -240,7 +240,7 @@ public class GameplayUi {
                                 if (position.equals(currPosition)) {
                                     setBlackPieceHighlight(out);
                                 } else {
-                                    setBlackPieceDGreen(out);
+                                    setBlackPieceGreen(out);
                                 }
                             } else {
                                 setBlackPieceLG(out);
