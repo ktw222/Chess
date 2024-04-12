@@ -1,5 +1,4 @@
 package ui;
-
 import Client.*;
 import chess.*;
 
@@ -12,7 +11,6 @@ import java.util.Scanner;
 
 
 import static ui.EscapeSequences.*;
-
 public class GameplayUi {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
     private static final int SQUARE_SIZE_IN_CHARS = 3;
@@ -140,18 +138,13 @@ public class GameplayUi {
         }
         System.out.println();
     }
-
     public void notify(String message) {
         System.out.println(SET_TEXT_COLOR_RED + message);
         printPrompt();
     }
-
     private void printPrompt() {
         System.out.print("\n" + RESET + ">>> " + SET_TEXT_COLOR_WHITE);
     }
-
-
-
     private void drawChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves) throws ResponseException {
         ChessBoard newChessBoard = new ChessBoard();
         if (chessGame.getBoard() == null) {
@@ -269,7 +262,6 @@ public class GameplayUi {
         drawReversedHeaders(out);
         out.print('\n');
     }
-
     private static void drawReverseChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves) throws ResponseException {
         ChessBoard newChessBoard = new ChessBoard();
         if (chessGame.getBoard() == null) {
@@ -390,8 +382,6 @@ public class GameplayUi {
         drawHeaders(out);
         out.print('\n');
     }
-
-
     private static void printPlayer(PrintStream out, ChessBoard chessBoard, ChessPosition currPosition) {
         switch (chessBoard.getPiece(currPosition).getPieceType()) {
             case PAWN:
@@ -414,7 +404,6 @@ public class GameplayUi {
                 break;
         }
     }
-
     private static void setWhitePieceLG(PrintStream out) {
         out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_WHITE);
@@ -448,13 +437,10 @@ public class GameplayUi {
         out.print(SET_BG_COLOR_YELLOW);
         out.print(SET_TEXT_COLOR_WHITE);
     }
-
     private static void setBlackPieceDG(PrintStream out) {
         out.print(SET_BG_COLOR_DARK_GREY);
         out.print(SET_TEXT_COLOR_BLACK);
     }
-
-
     private static void setWhitePieceDG(PrintStream out) {
         out.print(SET_BG_COLOR_DARK_GREY);
         out.print(SET_TEXT_COLOR_WHITE);
@@ -463,7 +449,6 @@ public class GameplayUi {
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_BLACK);
     }
-
     private static void setDarkGray(PrintStream out) {
         out.print(SET_BG_COLOR_DARK_GREY);
         out.print(SET_TEXT_COLOR_DARK_GREY);
@@ -477,7 +462,6 @@ public class GameplayUi {
         out.print(SET_TEXT_COLOR_GREEN);
         //out.print();
     }
-
     private static void setLightGray(PrintStream out) {
         out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_LIGHT_GREY);
@@ -510,4 +494,3 @@ public class GameplayUi {
         }
     }
 }
-
