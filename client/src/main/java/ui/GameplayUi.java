@@ -146,12 +146,7 @@ public class GameplayUi {
 
 
     private static void drawChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves, boolean reverse) throws ResponseException {
-        ChessBoard newChessBoard = new ChessBoard();
-        if (chessGame.getBoard() == null) {
-            chessGame.setBoard(newChessBoard);
-            chessGame.getBoard().resetBoard();
-        }
-        ChessBoard chessBoard = chessGame.getBoard();
+        ChessBoard chessBoard = chessBoardHelper(chessGame);
         if(reverse == true) {
             drawReversedHeaders(out);
         } else {
@@ -171,7 +166,6 @@ public class GameplayUi {
         int startRow = reverse ? 0 : BOARD_SIZE_IN_SQUARES -1;
         int endRow = reverse ? BOARD_SIZE_IN_SQUARES : -1;
         int rowIncrement = reverse ? 1 : -1;
-
         int startCol = reverse ? BOARD_SIZE_IN_SQUARES - 1 : 0;
         int endCol = reverse ? -1 : BOARD_SIZE_IN_SQUARES;
         int colIncrement = reverse ? -1 : 1;
@@ -195,25 +189,9 @@ public class GameplayUi {
                 if ((row + col) % 2 == 0) {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
-                            if(highlight == true) {
-                                if(position.equals(currPosition)) {
-                                    setWhitePieceHighlight(out);
-                                } else {
-                                    setWhitePieceDGreen(out);
-                                }
-                            } else {
-                                setWhitePieceDG(out);
-                            }
+                            darkWhitePieceHelper(out, highlight, position, currPosition);
                         } else {
-                            if(highlight == true) {
-                                if (position.equals(currPosition)) {
-                                    setBlackPieceHighlight(out);
-                                } else {
-                                    setBlackPieceDGreen(out);
-                                }
-                            } else {
-                                setBlackPieceDG(out);
-                            }
+                            darkBlackPieceHelper(out, highlight, position, currPosition);
                         }
                         printPlayer(out, chessBoard, currPosition);
                     } else {
@@ -231,25 +209,9 @@ public class GameplayUi {
                 } else {
                     if (chessBoard.getPiece(currPosition) != null) {
                         if (chessBoard.getPiece(currPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
-                            if(highlight == true) {
-                                if (position.equals(currPosition)) {
-                                    setWhitePieceHighlight(out);
-                                } else {
-                                    setWhitePieceGreen(out);
-                                }
-                            } else {
-                                setWhitePieceLG(out);
-                            }
+                            lightWhitePieceHelper(out, highlight, position, currPosition);
                         } else {
-                            if(highlight == true) {
-                                if (position.equals(currPosition)) {
-                                    setBlackPieceHighlight(out);
-                                } else {
-                                    setBlackPieceGreen(out);
-                                }
-                            } else {
-                                setBlackPieceLG(out);
-                            }
+                            lightBlackPieceHelper(out, highlight, position, currPosition);
                         }
                         printPlayer(out, chessBoard, currPosition);
                     } else {
@@ -279,6 +241,59 @@ public class GameplayUi {
             drawHeaders(out);
         }
         out.print('\n');
+    }
+    private static ChessBoard chessBoardHelper(ChessGame chessGame) {
+        ChessBoard newChessBoard = new ChessBoard();
+        if (chessGame.getBoard() == null) {
+            chessGame.setBoard(newChessBoard);
+            chessGame.getBoard().resetBoard();
+        }
+        ChessBoard chessBoard = chessGame.getBoard();
+        return chessBoard;
+    }
+    private static void lightBlackPieceHelper(PrintStream out, boolean highlight, ChessPosition position, ChessPosition currPosition) {
+        if(highlight == true) {
+            if (position.equals(currPosition)) {
+                setBlackPieceHighlight(out);
+            } else {
+                setBlackPieceGreen(out);
+            }
+        } else {
+            setBlackPieceLG(out);
+        }
+    }
+    private static void darkBlackPieceHelper(PrintStream out, boolean highlight, ChessPosition position, ChessPosition currPosition) {
+        if(highlight == true) {
+            if (position.equals(currPosition)) {
+                setBlackPieceHighlight(out);
+            } else {
+                setBlackPieceDGreen(out);
+            }
+        } else {
+            setBlackPieceDG(out);
+        }
+    }
+    private static void darkWhitePieceHelper(PrintStream out, boolean highlight, ChessPosition position, ChessPosition currPosition) {
+        if(highlight == true) {
+            if(position.equals(currPosition)) {
+                setWhitePieceHighlight(out);
+            } else {
+                setWhitePieceDGreen(out);
+            }
+        } else {
+            setWhitePieceDG(out);
+        }
+    }
+    private static void lightWhitePieceHelper(PrintStream out, boolean highlight, ChessPosition position, ChessPosition currPosition) {
+        if(highlight == true) {
+            if (position.equals(currPosition)) {
+                setWhitePieceHighlight(out);
+            } else {
+                setWhitePieceGreen(out);
+            }
+        } else {
+            setWhitePieceLG(out);
+        }
     }
     private static void printPlayer(PrintStream out, ChessBoard chessBoard, ChessPosition currPosition) {
         switch (chessBoard.getPiece(currPosition).getPieceType()) {
