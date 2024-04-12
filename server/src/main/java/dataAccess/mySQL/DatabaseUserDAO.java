@@ -10,7 +10,7 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 public class DatabaseUserDAO implements UserDAO{ //extends DatabaseDAO{
     public DatabaseUserDAO() throws DataAccessException {
-        configure();
+        configureDatabase();
     }
     public UserData createUser(UserData user) throws DataAccessException {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -38,7 +38,12 @@ public class DatabaseUserDAO implements UserDAO{ //extends DatabaseDAO{
         }
         return null;
     }
-
+    private UserData readUser(ResultSet rs) throws SQLException {
+        var username = rs.getString("username");
+        //var json = rs.getString("json");
+        //var user = new Gson().fromJson(json, UserData.class);
+        return null;
+    }
     public void clearUsers() throws DataAccessException {
         var statement = "TRUNCATE user";
         executeUpdate(statement);
@@ -65,7 +70,7 @@ public class DatabaseUserDAO implements UserDAO{ //extends DatabaseDAO{
             throw new DataAccessException("unable to update database");
         }
     }
-    private final String[] statements = {
+    private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS  user (
               `username` varchar(256) NOT NULL,
@@ -77,10 +82,10 @@ public class DatabaseUserDAO implements UserDAO{ //extends DatabaseDAO{
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
-    private void configure() throws DataAccessException{
+    private void configureDatabase() throws DataAccessException{
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : statements) {
+            for (var statement : createStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
