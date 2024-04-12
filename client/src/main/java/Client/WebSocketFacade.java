@@ -43,39 +43,22 @@ public class WebSocketFacade extends Endpoint{
     }
 
     public void joinPlayer(String authToken, ChessGame.TeamColor playerColor, Integer gameID) throws ResponseException {
-        try {
-            var action = new UserGameCommand(authToken, playerColor, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-        } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
+        helperMethod(authToken, playerColor, gameID);
     }
     public void joinObserver(String authToken, ChessGame.TeamColor playerColor, Integer gameID) throws ResponseException {
-        try {
-            var action = new UserGameCommand(authToken, playerColor, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-        } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
+        helperMethod(authToken, playerColor, gameID);
     }
     public void makeMove(String authToken, ChessGame.TeamColor playerColor, Integer gameID) throws ResponseException {
-        try {
-            var action = new UserGameCommand(authToken, playerColor, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-        } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
+        helperMethod(authToken, playerColor, gameID);
     }
     public void resign(String authToken, ChessGame.TeamColor playerColor, Integer gameID) throws ResponseException {
-        try {
-            var action = new UserGameCommand(authToken, playerColor, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-        } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
+        helperMethod(authToken, playerColor, gameID);
     }
 
     public void leaveGame(String authToken, ChessGame.TeamColor playerColor, Integer gameID) throws ResponseException {
+        helperMethod(authToken, playerColor, gameID);
+    }
+    public void helperMethod(String authToken, ChessGame.TeamColor playerColor, Integer gameID) throws ResponseException {
         try {
             var action = new UserGameCommand(authToken, playerColor, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
