@@ -84,7 +84,6 @@ public class GameplayUi {
         while (!result.equals("quit")) {
             printPrompt();
             String line = scanner.nextLine();
-
             try {
                 result = this.client.eval(line, client.authToken, gameID, joinColor, ws, out);
                 System.out.print(SET_TEXT_COLOR_MAGENTA + result);
@@ -158,12 +157,7 @@ public class GameplayUi {
         boolean highlight = false;
         Collection<ChessMove> validMoves = null;
         ChessPosition position = new ChessPosition(intRow, intCol);
-        if(highlightMoves == true) {
-            intRow = Integer.parseInt(row);
-            intCol = charToNumber(col);
-            position = new ChessPosition(intRow, intCol);
-            validMoves = chessBoard.getPiece(position).pieceMoves(chessBoard, position);
-        }
+        highlightSetup(intRow, intCol, position, validMoves, chessBoard, highlightMoves);
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; row++) {
             out.print(SET_BG_COLOR_BLACK);
             out.print(SET_TEXT_COLOR_MAGENTA);
@@ -275,12 +269,7 @@ public class GameplayUi {
         boolean highlight = false;
         Collection<ChessMove> validMoves = null;
         ChessPosition position = new ChessPosition(intRow, intCol);
-        if(highlightMoves == true) {
-            intRow = Integer.parseInt(row);
-            intCol = charToNumber(col);
-            position = new ChessPosition(intRow, intCol);
-            validMoves = chessBoard.getPiece(position).pieceMoves(chessBoard, position);
-        }
+        highlightSetup(intRow, intCol, position, validMoves, chessBoard, highlightMoves);
         for (int row = BOARD_SIZE_IN_SQUARES - 1; row >= 0; row--) { // Changed loop condition here
             out.print(SET_BG_COLOR_BLACK);
             out.print(SET_TEXT_COLOR_MAGENTA);
@@ -382,6 +371,16 @@ public class GameplayUi {
         drawHeaders(out);
         out.print('\n');
     }
+    private static void highlightSetup(int intRow, int intCol, ChessPosition position, Collection<ChessMove> validMoves,
+                                       ChessBoard chessBoard, boolean highlightMoves) {
+        if(highlightMoves == true) {
+            intRow = Integer.parseInt(row);
+            intCol = charToNumber(col);
+            position = new ChessPosition(intRow, intCol);
+            validMoves = chessBoard.getPiece(position).pieceMoves(chessBoard, position);
+        }
+    }
+
     private static void printPlayer(PrintStream out, ChessBoard chessBoard, ChessPosition currPosition) {
         switch (chessBoard.getPiece(currPosition).getPieceType()) {
             case PAWN:
