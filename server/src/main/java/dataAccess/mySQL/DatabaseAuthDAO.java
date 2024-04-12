@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class DatabaseAuthDAO extends DatabaseDAO implements AuthDAO {
     public DatabaseAuthDAO() throws DataAccessException {
-        configureDatabase();
+        setUpDatabase();
     }
     public AuthData createAuth(String username) throws DataAccessException{
         String authToken = UUID.randomUUID().toString();
@@ -46,7 +46,7 @@ public class DatabaseAuthDAO extends DatabaseDAO implements AuthDAO {
         //var statement = "DROP database chess";
         executeUpdate(statement);
     }
-    private final String[] createStatements = {
+    private final String[] configString = {
             """
             CREATE TABLE IF NOT EXISTS  auth (
               `username` varchar(256) NOT NULL,
@@ -55,10 +55,10 @@ public class DatabaseAuthDAO extends DatabaseDAO implements AuthDAO {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
-    private void configureDatabase() throws DataAccessException{
+    private void setUpDatabase() throws DataAccessException{
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
+            for (var statement : configString) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }

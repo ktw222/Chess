@@ -10,7 +10,7 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 public class DatabaseUserDAO implements UserDAO{ //extends DatabaseDAO{
     public DatabaseUserDAO() throws DataAccessException {
-        configureDatabase();
+        configure();
     }
     public UserData createUser(UserData user) throws DataAccessException {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -65,7 +65,7 @@ public class DatabaseUserDAO implements UserDAO{ //extends DatabaseDAO{
             throw new DataAccessException("unable to update database");
         }
     }
-    private final String[] createStatements = {
+    private final String[] statements = {
             """
             CREATE TABLE IF NOT EXISTS  user (
               `username` varchar(256) NOT NULL,
@@ -77,10 +77,10 @@ public class DatabaseUserDAO implements UserDAO{ //extends DatabaseDAO{
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
-    private void configureDatabase() throws DataAccessException{
+    private void configure() throws DataAccessException{
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
+            for (var statement : statements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
