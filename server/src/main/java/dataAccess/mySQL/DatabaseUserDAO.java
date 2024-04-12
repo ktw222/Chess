@@ -38,12 +38,7 @@ public class DatabaseUserDAO implements UserDAO{ //extends DatabaseDAO{
         }
         return null;
     }
-    private UserData readUser(ResultSet rs) throws SQLException {
-        var username = rs.getString("username");
-        //var json = rs.getString("json");
-        //var user = new Gson().fromJson(json, UserData.class);
-        return null;
-    }
+
     public void clearUsers() throws DataAccessException {
         var statement = "TRUNCATE user";
         executeUpdate(statement);
