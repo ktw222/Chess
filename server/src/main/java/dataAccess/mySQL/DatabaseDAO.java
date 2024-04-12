@@ -13,11 +13,11 @@ public class DatabaseDAO {
         try (var conn = DatabaseManager.getConnection()) {
             try (var db = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String p) db.setString(i + 1, p);
-                    else if (param instanceof Integer p) db.setInt(i + 1, p);
+                    var variables = params[i];
+                    if (variables instanceof String p) db.setString(i + 1, p);
+                    else if (variables instanceof Integer p) db.setInt(i + 1, p);
                         //else if (param instanceof PetType p) db.setString(i + 1, p.toString());
-                    else if (param == null) db.setNull(i + 1, NULL);
+                    else if (variables == null) db.setNull(i + 1, NULL);
                 }
                 db.executeUpdate();
                 var rs = db.getGeneratedKeys();
