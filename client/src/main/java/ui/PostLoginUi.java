@@ -1,6 +1,7 @@
 package ui;
 
-import Client.*;
+import chess.ChessGame;
+import client.*;
 import webSocketMessages.serverMessages.ServerMessage;
 
 import java.util.Scanner;
@@ -8,17 +9,26 @@ import java.util.Scanner;
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 
-public class PostLoginUi implements NotificationHandler {
-    private PostLoginClient client;
-    private String authToken;
 
-    private GameplayUi gameplayUi;
-    public PostLoginUi(ServerFacade server,String serverUrl) {
-        client = new PostLoginClient(server, serverUrl, this, this);
-        gameplayUi = new GameplayUi(server, serverUrl);
+public class PostLoginUi {
+    private String authToken;
+    private ServerFacade server;
+    private String serverUrl;
+    private PostLoginClient client;
+
+    public PostLoginUi(String authToken, ServerFacade server, String serverUrl) {
+        this.authToken = authToken;
+        this.server = server;
+        this.serverUrl = serverUrl;
+        client = new PostLoginClient(authToken, server, serverUrl);
     }
 
-    public void run(PreLoginClient client) {
+    public void run() {
+
+        ChessGame.TeamColor joinType = null;
+        int gameId = -1;
+        GameplayUi gameplayUi = null;
+
         System.out.println(SET_TEXT_COLOR_GREEN + "CreateGame, JoinGame, ListGames, or Logout to continue.");
 
         Scanner scanner = new Scanner(System.in);
@@ -28,16 +38,21 @@ public class PostLoginUi implements NotificationHandler {
             String line = scanner.nextLine();
 
             try {
-                result = this.client.eval(line, client.authToken);
+                result = this.client.eval(line);
                 System.out.print(SET_TEXT_COLOR_GREEN + result);
                 if(result.equals("Logout successful")) {
                     return;
-                } else if(result.equals("You successfully joined your game as white player!\n")) {
-                    gameplayUi.run(client, "WHITE", this.client.gameID, this.client.ws);
-                } else if(result.equals("You successfully joined your game as black player!\n")) {
-                    gameplayUi.run(client, "BLACK", this.client.gameID, this.client.ws);
-                } else if(result.equals("You successfully joined your game as observer!\n")) {
-                    gameplayUi.run(client, "OBSERVER", this.client.gameID, this.client.ws);
+                } else if (result.startsWith("WHITE") || result.startsWith("BLACK") || result.startsWith("OBSERVER")) {
+                    String[] parts = result.split("\s+");
+                    switch (parts[0]) {
+                        case "WHITE" -> joinType = ChessGame.TeamColor.WHITE;
+                        case "BLACK" -> joinType = ChessGame.TeamColor.BLACK;
+                        case "OBSERVER" -> joinType = null;
+                    }
+                    gameId = Integer.parseInt(parts[1]);
+
+                    gameplayUi = new GameplayUi(this.authToken, this.server, joinType, gameId, this.serverUrl);
+                    gameplayUi.run();
                 }
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -47,18 +62,8 @@ public class PostLoginUi implements NotificationHandler {
         System.out.println();
     }
 
-    public void notify(String message) {
-        System.out.println(SET_TEXT_COLOR_RED + message);
-        printPrompt();
-    }
-
     private void printPrompt() {
         System.out.print("\n" + RESET + ">>> " + SET_TEXT_COLOR_WHITE);
     }
 
-    @Override
-    public void notify(ServerMessage notification) {
-        System.out.println(SET_TEXT_COLOR_RED + notification);
-        printPrompt();
-    }
 }

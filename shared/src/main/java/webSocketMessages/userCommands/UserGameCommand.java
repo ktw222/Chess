@@ -45,6 +45,9 @@ public class UserGameCommand {
     public ChessMove getChessMove() {
         return move;
     }
+    public void setMove(ChessMove move) {
+        this.move = move;
+    }
     //game id and team color
     public ChessGame.TeamColor getPlayerColor() { return playerColor; }
     public String getAuthString() {
@@ -53,6 +56,9 @@ public class UserGameCommand {
 
     public CommandType getCommandType() {
         return this.commandType;
+    }
+    public void setCommandType(CommandType command) {
+        this.commandType = command;
     }
 
     @Override

@@ -37,29 +37,32 @@ public class WebSocketHandler extends DatabaseDAO{
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException, DataAccessException {
+        System.out.println("Message: " + message);
+        //session.getRemote().sendString("Hi client I exist");
         //authdata
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
 
         switch (command.getCommandType()) {
-            case JOIN_PLAYER -> joinPlayer(session,getUsername(session, command.getAuthString()), command);
-            case JOIN_OBSERVER -> joinObserver(session, getUsername(session, command.getAuthString()), command);
-            case LEAVE -> leaveGame(getUsername(session, command.getAuthString()), command);
+            case JOIN_PLAYER -> joinPlayer(session,command.getAuthString(), command);
+            case JOIN_OBSERVER -> joinObserver(session, command.getAuthString(), command);
+            case LEAVE -> leaveGame(command.getAuthString(), command);
             case RESIGN -> resignGame(session, getUsername(session, command.getAuthString()), command);
-            case MAKE_MOVE -> playerMakeMove(session, getUsername(session, command.getAuthString()), command);
+            case MAKE_MOVE -> playerMakeMove(session, command.getAuthString(), command);
         }
     }
 
-    private void joinPlayer(Session session, String username, UserGameCommand reqJoinGame) throws IOException, DataAccessException {
+    private void joinPlayer(Session session, String authToken, UserGameCommand reqJoinGame) throws IOException, DataAccessException {
         //game data
         try {
+            String username = getUsername(session, authToken);
             GameData gameData = checkGameID(session, reqJoinGame.getGameID());
             ChessGame game = gameData.game();
-            if(gameData.whiteUsername() == null || gameData.blackUsername() == null) {
+            if(gameData.whiteUsername() == null && gameData.blackUsername() == null) {
                 var errorMessage = String.format("Error: game is empty");
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
                 error.setErrorMessage(errorMessage);
                 session.getRemote().sendString(new Gson().toJson(error));
-                throw new DataAccessException("Error: Black username not black");
+                throw new DataAccessException("Error: game is empty");
             }
             if(reqJoinGame.getPlayerColor() != null) {
                 if (reqJoinGame.getPlayerColor().equals(ChessGame.TeamColor.BLACK)) {
@@ -80,7 +83,7 @@ public class WebSocketHandler extends DatabaseDAO{
                     }
                 }
             }
-            connections.add(username, session, reqJoinGame.getGameID());
+            connections.add(authToken, session, reqJoinGame.getGameID());
             var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
             loadGame.setGame(game);
             var message = String.format("%s has joined as %s player", username, reqJoinGame.getPlayerColor());
@@ -89,17 +92,19 @@ public class WebSocketHandler extends DatabaseDAO{
             //send message through client
             //session.getRemote.sendText(String json version of msg)
             session.getRemote().sendString(new Gson().toJson(loadGame));
-            connections.broadcast(username, reqJoinGame.getGameID(), notification);
+
+            connections.broadcast(reqJoinGame.getAuthString(), reqJoinGame.getGameID(), notification);
         } catch (Exception ex) {
             throw new DataAccessException(ex.getMessage());
         }
     }
-    public void joinObserver(Session session, String username, UserGameCommand reqJoinGame) throws IOException, DataAccessException {
+    public void joinObserver(Session session, String authToken, UserGameCommand reqJoinGame) throws IOException, DataAccessException {
         try {
+            String username = getUsername(session, authToken);
             GameData gameData = checkGameID(session, reqJoinGame.getGameID());
             ChessGame game = gameData.game();
             //ServerMessage.
-            connections.add(username, session, reqJoinGame.getGameID());
+            connections.add(authToken, session, reqJoinGame.getGameID());
             var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
             loadGame.setGame(game);
             var message = String.format("%s has joined as an observer", username);
@@ -107,8 +112,11 @@ public class WebSocketHandler extends DatabaseDAO{
             notification.setMessage(message);
             //send message through client
             //session.getRemote.sendText(String json version of msg)
+            //var json = new Gson().toJson(loadGame);
             session.getRemote().sendString(new Gson().toJson(loadGame));
-            connections.broadcast(username,reqJoinGame.getGameID(), notification);
+            //Thread.sleep(500);
+            //session.getRemote().sendString(new Gson().toJson(loadGame)); //added to test second message sent to WS
+            connections.broadcast(reqJoinGame.getAuthString(), reqJoinGame.getGameID(), notification);
         } catch (Exception ex) {
             throw new DataAccessException(ex.getMessage());
         }
@@ -119,7 +127,7 @@ public class WebSocketHandler extends DatabaseDAO{
         var message = String.format("%s left the game", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         notification.setMessage(message);
-        connections.broadcast(username, command.getGameID(), notification);
+        connections.broadcast(command.getAuthString(), command.getGameID(), notification);
     }
     private void resignGame(Session session, String username, UserGameCommand command) throws IOException, DataAccessException {
         GameData gameData = checkGameID(session, command.getGameID());
@@ -156,8 +164,9 @@ public class WebSocketHandler extends DatabaseDAO{
 
     }
 
-    public void playerMakeMove(Session session, String username, UserGameCommand command) throws DataAccessException {
+    public void playerMakeMove(Session session, String authToken, UserGameCommand command) throws DataAccessException {
         try {
+            String username = getUsername(session, authToken);
             GameData gameData = checkGameID(session, command.getGameID());
             ChessGame game = gameData.game();
             ChessGame.TeamColor teamTurn = game.getTeamTurn();
@@ -195,6 +204,18 @@ public class WebSocketHandler extends DatabaseDAO{
             //ChessGame.TeamColor playerColor = command.getPlayerColor();
             if(game.getTeamTurn().equals(playerColor)) {
                 game.makeMove(move);
+                if(game.isInCheck(playerColor) == true) {
+                    var message = String.format("%s is in check", username);
+                    var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+                    notification.setMessage(message);
+                    connections.broadcast(authToken, command.getGameID(), notification);
+                }
+                if(game.isInCheckmate(playerColor) == true) {
+                    var message = String.format("GAMEOVER checkmate");
+                    var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+                    notification.setMessage(message);
+                    connections.broadcast(authToken, command.getGameID(), notification);
+                }
                 String jsonGame = new Gson().toJson(game);
                 try {
                     String statement = "UPDATE games SET whiteUsername = ?, blackUsername = ?, game = ? WHERE gameName = ?";
@@ -209,8 +230,8 @@ public class WebSocketHandler extends DatabaseDAO{
                 notification.setMessage(message);
 
                 session.getRemote().sendString(new Gson().toJson(loadGame));
-                connections.broadcast(username, command.getGameID(), notification);
-                connections.broadcast(username, command.getGameID(), loadGame);
+                connections.broadcast(authToken, command.getGameID(), notification);
+                connections.broadcast(authToken, command.getGameID(), loadGame);
             } else {
                 var errorMessage = String.format("Error: cannot make move on other players turn");
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR);

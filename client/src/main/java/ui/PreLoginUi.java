@@ -1,20 +1,20 @@
 package ui;
-import Client.PreLoginClient;
+import client.PreLoginClient;
 
-import java.util.Objects;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 //import Client.PreLoginClient;
-import Client.ServerFacade;
+import client.ServerFacade;
 public class PreLoginUi {
-    private PreLoginClient client;
-    private PostLoginUi postLoginUi;
     private ServerFacade server;
+    private String serverUrl;
+    private PreLoginClient client;
+
     public PreLoginUi(String serverUrl) {
-        server = new ServerFacade(serverUrl);
-        client = new PreLoginClient(server, serverUrl, this);
-        postLoginUi = new PostLoginUi(server, serverUrl);
+        this.server = new ServerFacade(serverUrl);
+        this.serverUrl = serverUrl;
+        this.client = new PreLoginClient(server, serverUrl);
     }
 
     public void run() {
@@ -31,7 +31,8 @@ public class PreLoginUi {
                 result = client.eval(line);
                 System.out.print(SET_TEXT_COLOR_BLUE + result);
                 if(result.equals("You signed in successfully.") || result.equals("You registered successfully.")) {
-                    postLoginUi.run(client);
+                    PostLoginUi postLoginUi = new PostLoginUi(client.authToken, this.server, this.serverUrl);
+                    postLoginUi.run();
                 }
             } catch (Throwable e) {
                 var msg = e.toString();

@@ -1,4 +1,4 @@
-package Client;
+package client;
 
 import java.util.Arrays;
 
@@ -8,13 +8,11 @@ import ui.PreLoginUi;
 
 public class PreLoginClient {
     private String visitorName = null;
-    private final Client.ServerFacade server;
+    private final client.ServerFacade server;
     private final String serverUrl;
     public String authToken = "";
-    private PostLoginUi postLoginUi;
 
-    public PreLoginClient(ServerFacade server, String serverUrl, PreLoginUi preLoginUi) {
-        //server = new Client.ServerFacade(serverUrl);
+    public PreLoginClient(ServerFacade server, String serverUrl) {
         this.server = server;
         this.serverUrl = serverUrl;
     }
@@ -31,12 +29,12 @@ public class PreLoginClient {
                 default -> help();
                 case "quit" -> "quit";
             };
-        } catch (Client.ResponseException ex) {
+        } catch (client.ResponseException ex) {
             return ex.getMessage();
         }
     }
 
-    public String login(String... params) throws Client.ResponseException {
+    public String login(String... params) throws client.ResponseException {
 
         if (params.length >= 2) {
             String username = params[0];
@@ -47,9 +45,9 @@ public class PreLoginClient {
 
             return String.format("You signed in successfully.");
         }
-        throw new Client.ResponseException(400, "Expected: <username password>");
+        throw new client.ResponseException(400, "Expected: <username password>");
     }
-    public String register(String... params) throws Client.ResponseException {
+    public String register(String... params) throws client.ResponseException {
         if (params.length >= 3) {
             String username = params[0];
             String password = params[1];
@@ -60,11 +58,11 @@ public class PreLoginClient {
             return String.format("You registered successfully.");
             //postLoginUi.run();
         }
-        throw new Client.ResponseException(400, "Expected: <username password email>");
+        throw new client.ResponseException(400, "Expected: <username password email>");
     }
 
     public String help() {
-            return """
+        return """
                     - Register <username, password, email>
                     - Login <username, password>
                     - Quit

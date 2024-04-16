@@ -4,9 +4,9 @@ import org.junit.jupiter.api.*;
 import reqRes.ReqCreateGame;
 import reqRes.ReqJoinGame;
 import server.Server;
-import Client.ServerFacade;
+import client.ServerFacade;
 import model.AuthData;
-import Client.ResponseException;
+import client.ResponseException;
 
 
 public class ServerFacadeTests {

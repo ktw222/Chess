@@ -1,17 +1,17 @@
 package ui;
-import Client.*;
+import client.*;
 import chess.*;
+import webSocketMessages.serverMessages.ServerMessage;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Random;
 import java.util.Scanner;
 
 
+import static java.lang.System.out;
 import static ui.EscapeSequences.*;
-public class GameplayUi {
+public class GameplayUi implements NotificationHandler{
     private static final int BOARD_SIZE_IN_SQUARES = 8;
     private static final int SQUARE_SIZE_IN_CHARS = 3;
     private static final int LINE_WIDTH_IN_CHARS = 1;
@@ -22,14 +22,18 @@ public class GameplayUi {
     private static final String KNIGHT = " N ";
     private static final String BISHOP = " B ";
     private static final String ROOK = " R ";
+    private String authToken;
+    private ServerFacade server;
+    private ChessGame.TeamColor joinType;
+    private int gameId;
+    private String serverUrl;
     private GameplayClient client;
     private boolean black = false;
     private boolean white = false;
     private boolean observer = false;
     static String row;
     static String col;
-    //private static Random rand = new Random();
-
+    ChessGame chessGame = new ChessGame();
 
     private static void drawHeaders(PrintStream out) {
         setBlack(out);
@@ -56,44 +60,57 @@ public class GameplayUi {
         out.print(player);
         setBlack(out);
     }
-    public GameplayUi(ServerFacade server, String serverUrl) {
-        client = new GameplayClient(server, serverUrl, this);
+    public GameplayUi(String authToken, ServerFacade server, ChessGame.TeamColor joinType, Integer gameId, String serverUrl) {
+        this.authToken = authToken;
+        this.server = server;
+        this.joinType = joinType;
+        this.gameId = gameId;
+        this.serverUrl = serverUrl;
     }
-    public void run(PreLoginClient client, String joinType, Integer gameID, WebSocketFacade ws) throws ResponseException {
+    public void run() throws ResponseException {
+
+        WebSocketFacade ws = new WebSocketFacade(this.serverUrl, this);
+        if (joinType == ChessGame.TeamColor.WHITE || joinType == ChessGame.TeamColor.BLACK)
+            ws.joinPlayer(this.authToken, this.joinType, this.gameId);
+        else
+            ws.joinObserver(this.authToken, null, gameId);
+
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+
+        this.client = new GameplayClient(this.authToken, this.gameId, this.joinType, ws, out);
+
         out.print(ERASE_SCREEN);
-        System.out.println(SET_TEXT_COLOR_MAGENTA + "Welcome to your game!\n\n");
-        ChessGame chessGame = new ChessGame();
-        ChessGame.TeamColor joinColor = null;
-        if(joinType.equals("WHITE") || joinType.equals("OBSERVER")){
-            drawChessBoard(out, chessGame, false, false);
-            if (joinType.equals("WHITE")) {
+        System.out.println(SET_TEXT_COLOR_MAGENTA + "\nWelcome to your game!\n\n");
+
+        if(this.joinType == ChessGame.TeamColor.WHITE || this.joinType == null){
+            drawChessBoard(out, chessGame, false, false, true);
+            if (this.joinType == ChessGame.TeamColor.WHITE) {
                 white = true;
-                joinColor = ChessGame.TeamColor.WHITE;
             } else {
                 observer = true;
             }
-        } else if(joinType.equals("BLACK")) {
-            drawChessBoard(out, chessGame, false, true);
+        } else if(this.joinType == ChessGame.TeamColor.BLACK) {
+            drawChessBoard(out, chessGame, false, true, true);
             black = true;
-            joinColor = ChessGame.TeamColor.BLACK;
         }
+
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals("quit")) {
             printPrompt();
             String line = scanner.nextLine();
             try {
-                result = this.client.eval(line, client.authToken, gameID, joinColor, ws, out);
+                result = this.client.eval(line);
                 System.out.print(SET_TEXT_COLOR_MAGENTA + result);
                 String newResult = result.replaceAll("\\s*\\b[[a-h]^[1-8]]\\b\\s*", "");
+                String moveResult = newResult.replaceAll("[a-z]+$", "");
                 if(result.equals("Left game\n")) {
                     return;
                 } else if(result.equals("Board successfully redrawn!\n")) {
                     if(observer == true || white == true) {
-                        drawChessBoard(out, chessGame, false, false);
+                        drawChessBoard(out, chessGame, false, false, false);
                     } else if(black == true) {
-                        drawChessBoard(out, chessGame, false, true);
+                        drawChessBoard(out, chessGame, false, true, false);
                     }
                 }else if(newResult.equals("Legal moves for piece:")) {
                     String[] values = result.split("\\s+");
@@ -109,25 +126,49 @@ public class GameplayUi {
                         counter++;
                     }
                     if(observer == true || white == true) {
-                        drawChessBoard(out, chessGame, true, false);
+                        drawChessBoard(out, chessGame, true, false, false);
                     } else if(black == true) {
-                        drawChessBoard(out, chessGame, true, true);
+                        drawChessBoard(out, chessGame, true, true, false);
                     }
-                } else if(newResult.equals("You moved  to . Promotion: ")){
+                } else if(moveResult.equals("You movedtoposition. Promotion: ")){
+                    System.out.println("\n");
                     String[] values = result.split("\\s+");
                     int counter = 1;
-                    String firstPosition = null;
-                    String movePosition = null;
+                    int firstPositionRow = 0;
+                    int firstPositionCol = 0;
+                    int movePositionRow = 0;
+                    int movePositionCol = 0;
                     String promotionChoice = null;
+                    ChessPiece.PieceType promotion = null;
                     for(int i = 0; i < values.length; i++) {
                         if(counter == 3) {
-                            firstPosition = values[i];
-                        } else if(counter == 5) {
-                            movePosition = values[i];
-                        } else if(counter == 7) {
+                            firstPositionRow = Integer.parseInt(values[i]);
+                        } else if (counter == 4) {
+                            firstPositionCol = charToNumber(values[i]);
+                        } else if(counter == 6) {
+                            movePositionRow = Integer.parseInt(values[i]);
+                        }else if (counter == 7) {
+                            movePositionCol = charToNumber(values[i]);
+                        } else if(counter == 9) {
                             promotionChoice = values[i];
+                            switch(promotionChoice) {
+                                case "knight" -> promotion = ChessPiece.PieceType.KNIGHT;
+                                case "queen" -> promotion = ChessPiece.PieceType.QUEEN;
+                                case "rook" -> promotion = ChessPiece.PieceType.ROOK;
+                                case "bishop" -> promotion = ChessPiece.PieceType.BISHOP;
+                                default -> promotion = null;
+                            }
                         }
+                        counter++;
                     }
+                    ChessMove move = new ChessMove(new ChessPosition(firstPositionRow, firstPositionCol),
+                            new ChessPosition(movePositionRow, movePositionCol), promotion);
+                    ws.makeMove(authToken, joinType, gameId, move);
+//                    if(observer == true || white == true) {
+//                        drawChessBoard(out, chessGame, false, false, false);
+//                    } else if(black == true) {
+//                        drawChessBoard(out, chessGame, false, true, false);
+//                    }
                 }
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -135,18 +176,22 @@ public class GameplayUi {
             }
         }
         System.out.println();
+
     }
     public void notify(String message) {
-        System.out.println(SET_TEXT_COLOR_RED + message);
+        out.println(SET_TEXT_COLOR_RED + message);
         printPrompt();
     }
     private void printPrompt() {
-        System.out.print("\n" + RESET + ">>> " + SET_TEXT_COLOR_WHITE);
+        out.print("\n" + RESET + ">>> " + SET_TEXT_COLOR_WHITE);
     }
 
 
-    private static void drawChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves, boolean reverse) throws ResponseException {
-        ChessBoard chessBoard = chessBoardHelper(chessGame);
+    public static void drawChessBoard(PrintStream out, ChessGame chessGame, boolean highlightMoves, boolean reverse, boolean join) throws ResponseException {
+        if(join) {
+            ChessBoard chessBoard = chessBoardHelper(chessGame);
+        }
+        ChessBoard chessBoard= chessGame.getBoard();
         if(reverse == true) {
             drawReversedHeaders(out);
         } else {
@@ -406,4 +451,24 @@ public class GameplayUi {
             throw new ResponseException(400, "col does not exist please enter from a-h");
         }
     }
+    @Override
+    public void notify(ServerMessage notification) {
+        out.println(SET_TEXT_COLOR_RED + notification.getMessage());
+        printPrompt();
+    }
+    @Override
+    public void loadGame(ServerMessage notification) throws ResponseException {
+        this.chessGame = notification.getGame();
+        if(observer == true || white == true) {
+            drawChessBoard(out, chessGame, false, false, false);
+        } else if(black == true) {
+            drawChessBoard(out, chessGame, false, true, false);
+        }
+    }
+    @Override
+    public void error(ServerMessage notification) {
+        out.println(SET_TEXT_COLOR_RED + notification.getErrorMessage());
+        printPrompt();
+    }
+
 }

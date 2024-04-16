@@ -1,4 +1,4 @@
-package Client;
+package client;
 
 import com.google.gson.Gson;
 import model.AuthData;
@@ -8,9 +8,6 @@ import reqRes.*; //move to shared
 //make new exception
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class ServerFacade {
     private final String serverUrl;
@@ -40,7 +37,7 @@ public class ServerFacade {
         this.authToken = authData.authToken();
         return authData;
     }
-    public int createGame(String authToken, ReqCreateGame requestObj) throws Client.ResponseException {
+    public int createGame(String authToken, ReqCreateGame requestObj) throws client.ResponseException {
         var path = "/game"; //match phase 3
         return this.makeRequest("POST", path, authToken, requestObj, GameData.class).gameID();
     }

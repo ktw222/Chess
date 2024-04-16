@@ -1,40 +1,41 @@
-package Client;
+package client;
 
 import chess.ChessGame;
-import model.GameData;
-import reqRes.ReqCreateGame;
-import reqRes.ReqJoinGame;
 import ui.GameplayUi;
-import ui.PostLoginUi;
+import webSocketMessages.serverMessages.ServerMessage;
 
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
+import static ui.EscapeSequences.*;
+
 public class GameplayClient {
     private String visitorName = null;
-    private final ServerFacade server;
-    private final String serverUrl;
+    //private final ServerFacade server;
+    //private final String serverUrl;
     private String authToken;
     ChessGame.TeamColor playerColor;
     private Integer gameID;
     private HashMap<Integer, Integer> gameList = new HashMap<>();
     private WebSocketFacade ws;
     private PrintStream out;
-    public GameplayClient(ServerFacade server, String serverUrl, GameplayUi gameplayUi) {
-        this.server = server;
-        this.serverUrl = serverUrl;
-        //this.ws = new WebSocketFacade()
-
+    public GameplayClient(String authToken, Integer gameID, ChessGame.TeamColor playerColor, WebSocketFacade ws,
+                          PrintStream out) throws ResponseException {
+        this.authToken = authToken;
+        this.gameID = gameID;
+        this.playerColor = playerColor;
+        this.ws = ws;
+        this.out = out;
     }
 
-    public String eval(String input, String authToken, Integer gameID, ChessGame.TeamColor playerColor, WebSocketFacade ws, PrintStream out) {
+    public String eval(String input) {
         try {
             this.authToken = authToken;
             this.gameID = gameID;
             this.playerColor = playerColor;
-            this.ws = ws;
+            //this.ws = ws;
             this.out = out;
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
@@ -44,7 +45,7 @@ public class GameplayClient {
                 case "makemove" -> makeMoves(params);
                 case "resign" -> resign();
                 case "redraw" -> redrawBoard();
-                case "leaveGame " -> leaveGame();
+                case "leavegame" -> leaveGame();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -71,8 +72,8 @@ public class GameplayClient {
             if(params.length > 4) {
                 promotionPiece = params[4];
             }
-            ws.makeMove(authToken, playerColor, gameID);
-            return String.format("You moved %s%s to %s%s. Promotion: %s", origPieceRow, origPieceColumn, newPieceRow, newPieceColumn, promotionPiece);
+            //ws.makeMove(authToken, playerColor, gameID);
+            return String.format("You moved %s %s to %s %s position. Promotion: %s", origPieceRow, origPieceColumn, newPieceRow, newPieceColumn, promotionPiece);
         }
         throw new ResponseException(400, "Expected: currPieceRow currPieceCol moveRow moveCol promotionChoice");
     }
@@ -124,4 +125,5 @@ public class GameplayClient {
                     """;
 
     }
+
 }

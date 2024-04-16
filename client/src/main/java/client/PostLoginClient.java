@@ -1,13 +1,12 @@
-package Client;
+package client;
 
-import chess.ChessGame;
 import model.GameData;
 import reqRes.ReqCreateGame;
 import reqRes.ReqJoinGame;
-import ui.PostLoginUi;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PostLoginClient {
     private String visitorName = null;
@@ -15,23 +14,21 @@ public class PostLoginClient {
     private final String serverUrl;
     private String authToken;
     public Integer gameID;
-    private HashMap<Integer, Integer> gameList = new HashMap<>();
-    private final NotificationHandler notificationHandler;
-    public WebSocketFacade ws;
+    private ConcurrentHashMap<Integer, Integer> gameList = new ConcurrentHashMap<>();
 
-    public PostLoginClient(ServerFacade server, String serverUrl, PostLoginUi postLoginUi, NotificationHandler notificationHandler) {
+    public PostLoginClient(String authToken, ServerFacade server, String serverUrl) {
+        this.authToken = authToken;
         this.server = server;
         this.serverUrl = serverUrl;
-
-        this.notificationHandler = notificationHandler;
     }
 
-    public String eval(String input, String authToken) {
+    public String eval(String input) {
         try {
             this.authToken = authToken;
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            //this.out = out;
             return switch (cmd) {
                 case "listgames" -> listGames();
                 case "logout" -> logOut();
@@ -54,21 +51,16 @@ public class PostLoginClient {
                 playerColor = params[1];
                 playerColor = playerColor.toUpperCase();
             }
-            ws = new WebSocketFacade(serverUrl, notificationHandler);
             server.joinGame(new ReqJoinGame(gameList.get(gameID), playerColor), authToken);
             if(playerColor!= null) {
                 if(playerColor.equals("WHITE")) {
-                    ws.joinPlayer(authToken, ChessGame.TeamColor.WHITE, gameID);
-                    return String.format("You successfully joined your game as white player!\n");
+                    return String.format("WHITE %d", gameID);
                 } else if(playerColor.equals("BLACK")) {
-                    ws.joinPlayer(authToken, ChessGame.TeamColor.BLACK, gameID);
-                    return String.format("You successfully joined your game as black player!\n");
+                    return String.format("BLACK %d", gameID);
                 }
             } else {
-                ws.joinObserver(authToken, null, gameID);
-                return String.format("You successfully joined your game as observer!\n");
+                return String.format("OBSERVER %d", gameID);
             }
-
         }
         throw new ResponseException(400, "Expected: <gameID playerColor>");
     }
@@ -116,7 +108,7 @@ public class PostLoginClient {
 
 
     public String help() {
-            return """
+        return """
                     - CreateGame <gameName>
                     - JoinGame <gameID>
                     - ListGames <>
